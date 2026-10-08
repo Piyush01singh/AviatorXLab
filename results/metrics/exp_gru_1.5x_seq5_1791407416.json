@@ -1,0 +1,44 @@
+{
+  "experiment_id": "exp_gru_1.5x_seq5_1791407416",
+  "model_name": "GRU",
+  "task_type": "threshold_classification",
+  "threshold": "1.5x",
+  "dataset_version": "dataset_v001",
+  "feature_version": "features_v001",
+  "train_range": {
+    "samples": 65,
+    "seq_len": 5
+  },
+  "validation_range": {
+    "samples": 10,
+    "seq_len": 5
+  },
+  "test_range": null,
+  "hyperparameters": {
+    "sequence_length": 5,
+    "hidden_size": 64,
+    "num_layers": 1,
+    "dropout": 0.2,
+    "learning_rate": 0.001,
+    "batch_size": 16,
+    "epochs": 2,
+    "device": "cpu",
+    "best_val_loss": 0.66541
+  },
+  "random_seed": 42,
+  "training_time_sec": 0.0272,
+  "inference_time_sec": 0.0005,
+  "metrics": {
+    "accuracy": 0.2,
+    "balanced_accuracy": 0.16667,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "roc_auc": 0.25,
+    "pr_auc": 0.33819,
+    "log_loss": 0.71095,
+    "brier_score": 0.2589,
+    "ece": 0.31624
+  },
+  "timestamp": "2026-10-07T21:10:16.106439+00:00"
+}

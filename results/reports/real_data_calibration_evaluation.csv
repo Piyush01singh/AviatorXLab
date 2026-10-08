@@ -1,0 +1,10 @@
+model,calibration,brier_score,log_loss,ece,mce
+Logistic Regression,None (Raw),0.25486,0.70318,0.06761,0.79511
+Logistic Regression,Platt (Logistic),0.24983,0.6928,0.03142,0.39605
+Logistic Regression,Isotonic Regression,0.25202,0.69799,0.0354,0.67369
+Random Forest,None (Raw),0.25304,0.69924,0.06144,0.60262
+Random Forest,Platt (Logistic),0.24956,0.69227,0.02787,0.06382
+Random Forest,Isotonic Regression,0.25052,0.69423,0.03047,0.10786
+XGBoost,None (Raw),0.25322,0.69964,0.05877,0.28946
+XGBoost,Platt (Logistic),0.24962,0.69239,0.02856,0.03012
+XGBoost,Isotonic Regression,0.25124,0.73807,0.03319,0.66667

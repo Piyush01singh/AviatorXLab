@@ -1,0 +1,40 @@
+{
+  "experiment_id": "exp_xgb_5.0x_1791402614",
+  "model_name": "XGBoost",
+  "task_type": "threshold_classification",
+  "threshold": "5.0x",
+  "dataset_version": "dataset_v001",
+  "feature_version": "features_v001",
+  "train_range": {
+    "samples": 6965
+  },
+  "validation_range": {
+    "samples": 1492
+  },
+  "test_range": null,
+  "hyperparameters": {
+    "n_estimators": 200,
+    "max_depth": 4,
+    "learning_rate": 0.05,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "early_stopping_rounds": 15,
+    "eval_metric": "logloss"
+  },
+  "random_seed": 42,
+  "training_time_sec": 0.2145,
+  "inference_time_sec": 0.0021,
+  "metrics": {
+    "accuracy": 0.92426,
+    "balanced_accuracy": 0.81114,
+    "precision": 0.91351,
+    "recall": 0.63534,
+    "f1": 0.74945,
+    "roc_auc": 0.93645,
+    "pr_auc": 0.85021,
+    "log_loss": 0.20144,
+    "brier_score": 0.05892,
+    "ece": 0.01139
+  },
+  "timestamp": "2026-10-07T19:50:14.306262+00:00"
+}

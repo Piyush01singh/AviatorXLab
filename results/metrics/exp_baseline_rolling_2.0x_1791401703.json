@@ -1,0 +1,33 @@
+{
+  "experiment_id": "exp_baseline_rolling_2.0x_1791401703",
+  "model_name": "Rolling Prob Baseline",
+  "task_type": "threshold_classification",
+  "threshold": "2.0x",
+  "dataset_version": "dataset_v001",
+  "feature_version": "features_v001",
+  "train_range": {
+    "samples": 6965
+  },
+  "validation_range": {
+    "samples": 1492
+  },
+  "test_range": null,
+  "hyperparameters": {
+    "window": 50
+  },
+  "random_seed": 42,
+  "training_time_sec": 0.001,
+  "inference_time_sec": 0.001,
+  "metrics": {
+    "accuracy": 0.49464,
+    "balanced_accuracy": 0.48181,
+    "precision": 0.43243,
+    "recall": 0.32749,
+    "f1": 0.37271,
+    "roc_auc": 0.49228,
+    "pr_auc": 0.44811,
+    "log_loss": 0.70362,
+    "brier_score": 0.25349
+  },
+  "timestamp": "2026-10-07T19:35:03.364587"
+}

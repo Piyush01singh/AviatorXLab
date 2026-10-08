@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aviator ML Research — Live Predictability & Information Bounds Dashboard</title>
+  <meta name="color-scheme" content="dark light">
+  <script>
+    try {
+      const savedTheme = localStorage.getItem("color-scheme");
+      if (savedTheme === "light" || savedTheme === "dark") {
+        document.querySelector('meta[name="color-scheme"]').content = savedTheme;
+      }
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="/static/style.css?v=2.2">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+/* ==============================================================================
+   AVIATOR ML RESEARCH DASHBOARD — INLINE CORE DESIGN SYSTEM
+   Guarantees immediate styling regardless of browser asset cache state
+   ============================================================================== */
+:root {
+  color-scheme: dark light;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --bg-app: #080c15;
+  --bg-card: #0f172a;
+  --bg-card-elevated: #162036;
+  --bg-card-subtle: #0d1424;
+  --bg-input: #131d33;
+  --border-subtle: #1e293b;
+  --border-card: #1b263b;
+  --border-focus: #38bdf8;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --accent-cyan: #0ea5e9;
+  --accent-blue: #2563eb;
+  --accent-indigo: #6366f1;
+  --accent-purple: #8b5cf6;
+  --accent-primary: #38bdf8;
+  --accent-primary-hover: #0ea5e9;
+  --color-success: #10b981;
+  --color-success-bg: rgba(16, 185, 129, 0.18);
+  --color-warning: #f59e0b;
+  --color-warning-bg: rgba(245, 158, 11, 0.18);
+  --color-danger: #ef4444;
+  --color-danger-bg: rgba(239, 68, 68, 0.18);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-card: 0 4px 20px rgba(0,0,0,0.4);
+  --shadow-hero: 0 10px 30px -5px rgba(14,165,233,0.15);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --container-max: 1260px;
+}
+
+:root:has(> head > meta[name="color-scheme"][content="light"]) {
+  color-scheme: light;
+  --bg-app: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-elevated: #f8fafc;
+  --bg-card-subtle: #f1f5f9;
+  --bg-input: #e2e8f0;
+  --border-subtle: #cbd5e1;
+  --border-card: #e2e8f0;
+  --border-focus: #2563eb;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --accent-primary: #2563eb;
+  --accent-primary-hover: #1d4ed8;
+  --color-success-bg: rgba(16, 185, 129, 0.12);
+  --color-warning-bg: rgba(245, 158, 11, 0.12);
+  --color-danger-bg: rgba(239, 68, 68, 0.12);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-card: 0 4px 12px rgba(0,0,0,0.05);
+  --shadow-hero: 0 10px 25px -5px rgba(37,99,235,0.08);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+}
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+.font-mono { font-family: var(--font-mono); }
+.text-muted { color: var(--text-muted); }
+.text-dim { color: var(--text-dim); }
+.text-sm { font-size: 0.85rem; }
+.text-xs { font-size: 0.75rem; }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.py-4 { padding-top: 1.25rem; padding-bottom: 1.25rem; }
+.text-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 1. APP HEADER */
+.app-header {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  padding: 12px 0;
+}
+.header-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-icon-wrap { display: flex; align-items: center; justify-content: center; color: var(--accent-primary); }
+.brand-text { display: flex; flex-direction: column; }
+.brand-title-wrap { display: flex; align-items: center; gap: 8px; }
+.brand-title { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary); }
+.brand-subtitle { font-size: 0.75rem; color: var(--text-muted); }
+.mode-nav {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  gap: 4px;
+}
+.mode-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+.mode-tab:hover { color: var(--text-primary); }
+.mode-tab.active { background: var(--bg-card-elevated); color: var(--text-primary); box-shadow: var(--shadow-sm); }
+.mode-pulse-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background-color: var(--accent-primary); box-shadow: 0 0 6px var(--accent-primary);
+}
+.header-tools { display: flex; align-items: center; gap: 8px; }
+.btn-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle); background: var(--bg-card-subtle);
+  color: var(--text-secondary); cursor: pointer; transition: all 0.15s ease-in-out;
+}
+.btn-icon:hover { background: var(--bg-card-elevated); color: var(--text-primary); border-color: var(--border-focus); }
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+:root:has(> head > meta[name="color-scheme"][content="light"]) .theme-toggle .icon-sun { display: block; }
+:root:has(> head > meta[name="color-scheme"][content="light"]) .theme-toggle .icon-moon { display: none; }
+
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; font-size: 0.725rem; font-weight: 600; border-radius: var(--radius-sm); }
+.badge-read-only { background: var(--bg-card-subtle); color: var(--accent-primary); border: 1px solid var(--border-subtle); }
+.badge-accent { background: rgba(14, 165, 233, 0.15); color: var(--accent-primary); border: 1px solid rgba(14, 165, 233, 0.3); }
+.badge-calibrated { background: var(--color-success-bg); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.3); }
+.badge-strongest { background: var(--color-warning-bg); color: var(--color-warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+.badge-hit { background: var(--color-success-bg); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.25); }
+.badge-miss { background: var(--bg-card-subtle); color: var(--text-muted); border: 1px solid var(--border-subtle); }
+
+/* MAIN LAYOUT */
+.main-content {
+  flex: 1; padding-top: 24px; padding-bottom: 48px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+.section-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  position: relative;
+  display: block;
+}
+.section-header-block { margin-bottom: 20px; }
+.section-heading { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); margin-bottom: 4px; }
+.section-subtext { font-size: 0.85rem; color: var(--text-muted); }
+
+/* 2. LIVE STATUS + CONTROLS */
+.control-panel-card {
+  padding: 16px 24px;
+  background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-card-subtle) 100%);
+}
+.control-panel-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr 1.5fr;
+  align-items: center;
+  gap: 20px;
+}
+.control-col { display: flex; flex-direction: column; gap: 4px; }
+.control-col-action { align-items: flex-end; }
+.control-label { font-size: 0.725rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+.control-status-wrap { display: flex; align-items: center; gap: 8px; }
+.status-indicator-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.status-dot-online { background-color: var(--color-success); box-shadow: 0 0 8px var(--color-success); animation: pulse-dot 2s infinite ease-in-out; }
+.status-dot-offline { background-color: var(--text-dim); }
+@keyframes pulse-dot { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
+.control-status-text { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+.control-value { font-size: 1.05rem; font-weight: 600; color: var(--text-primary); }
+.mult-highlight { color: var(--accent-primary); font-size: 1.15rem; }
+
+.stage-badge-wrap { display: flex; }
+.stage-badge {
+  display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px;
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; border: 1px solid transparent;
+}
+.stage-idle { background: var(--bg-card-subtle); color: var(--text-muted); border-color: var(--border-subtle); }
+.stage-waiting { background: var(--color-warning-bg); color: var(--color-warning); border-color: rgba(245, 158, 11, 0.35); animation: pulse-badge 1.5s infinite; }
+.stage-flying { background: var(--color-success-bg); color: var(--color-success); border-color: rgba(16, 185, 129, 0.35); }
+.stage-crashed { background: var(--color-danger-bg); color: var(--color-danger); border-color: rgba(239, 68, 68, 0.35); }
+@keyframes pulse-badge { 0% { opacity: 0.85; } 50% { opacity: 1; } 100% { opacity: 0.85; } }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font-sans); font-size: 0.875rem; font-weight: 600;
+  padding: 9px 18px; border-radius: var(--radius-md); cursor: pointer;
+  border: none; transition: all 0.2s ease-in-out; outline: none;
+}
+.btn-live-action {
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+  color: #ffffff; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); min-width: 175px;
+}
+.btn-live-action:hover {
+  background: linear-gradient(135deg, #0369a1 0%, #1d4ed8 100%);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45); transform: translateY(-1px);
+}
+.btn-live-action.connected {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+.btn-live-pulse { width: 7px; height: 7px; border-radius: 50%; background: #ffffff; }
+.btn-primary { background: var(--accent-primary); color: #ffffff; }
+.btn-primary:hover { background: var(--accent-primary-hover); }
+.btn-secondary { background: var(--bg-card-subtle); color: var(--text-primary); border: 1px solid var(--border-subtle); }
+.btn-secondary:hover { background: var(--bg-card-elevated); border-color: var(--border-focus); }
+.btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+/* 3. ROUND HISTORY */
+.history-section { padding: 16px 20px; }
+.section-sub-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.section-sub-title-wrap { display: flex; align-items: center; gap: 8px; }
+.section-sub-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+.section-badge-counter { font-size: 0.725rem; color: var(--text-muted); background: var(--bg-card-subtle); padding: 2px 7px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); }
+.history-legend { display: flex; align-items: center; gap: 8px; }
+.legend-chip { font-size: 0.7rem; font-family: var(--font-mono); padding: 2px 6px; border-radius: var(--radius-sm); }
+.history-strip-container { overflow-x: auto; padding-bottom: 4px; }
+.history-strip { display: flex; gap: 8px; align-items: center; min-height: 38px; }
+.strip-chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 6px 12px; border-radius: var(--radius-md); font-family: var(--font-mono);
+  font-size: 0.825rem; font-weight: 600; white-space: nowrap; flex-shrink: 0;
+  transition: transform 0.15s ease-in-out; border: 1px solid transparent;
+}
+.strip-chip:hover { transform: translateY(-2px); }
+.chip-low { background: #131d33; color: #38bdf8; border-color: rgba(56, 189, 248, 0.25); }
+.chip-medium { background: #1e1b4b; color: #a78bfa; border-color: rgba(167, 139, 250, 0.3); }
+.chip-high { background: #362208; color: #fbbf24; border-color: rgba(251, 191, 36, 0.35); }
+
+/* 4. NEXT ROUND HERO */
+.next-round-hero-card {
+  background: linear-gradient(160deg, var(--bg-card) 0%, var(--bg-card-subtle) 100%);
+  border: 1px solid var(--border-card); box-shadow: var(--shadow-hero);
+  position: relative; overflow: hidden;
+}
+.next-round-hero-card::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, #0ea5e9, #6366f1, #10b981);
+}
+.hero-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 20px; }
+.hero-meta { flex: 1; }
+.hero-badge-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.hero-round-heading { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text-primary); margin-bottom: 4px; }
+.hero-round-id { color: var(--accent-primary); }
+.hero-desc { font-size: 0.85rem; color: var(--text-muted); }
+.hero-spotlight {
+  background: var(--bg-card-elevated); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg); padding: 16px 22px; min-width: 260px;
+  text-align: right; display: flex; flex-direction: column; justify-content: center;
+}
+.spotlight-label { font-size: 0.725rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.04em; margin-bottom: 4px; }
+.spotlight-value { font-size: 1.85rem; font-weight: 800; color: var(--accent-primary); line-height: 1.1; }
+.spotlight-fair { font-size: 0.775rem; color: var(--text-dim); margin-top: 4px; }
+.consensus-stats-bar {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  background: var(--bg-card-subtle); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 18px;
+}
+.consensus-stat-item { display: flex; flex-direction: column; gap: 3px; }
+.consensus-stat-label { font-size: 0.725rem; color: var(--text-muted); font-weight: 500; }
+.consensus-stat-val { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+.disclaimer-callout {
+  display: flex; align-items: flex-start; gap: 12px; background: var(--bg-card-subtle);
+  border-left: 3px solid var(--accent-primary); padding: 12px 16px;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+.disclaimer-icon-wrap { color: var(--accent-primary); flex-shrink: 0; margin-top: 2px; }
+.disclaimer-body { font-size: 0.8rem; line-height: 1.45; color: var(--text-muted); }
+.disclaimer-body strong { color: var(--text-primary); }
+
+/* 5. THRESHOLD CARDS */
+.thresholds-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+.threshold-card {
+  background: var(--bg-card-elevated); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); padding: 18px 16px; display: flex;
+  flex-direction: column; align-items: center; text-align: center;
+  transition: transform 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+.threshold-card:hover { transform: translateY(-2px); border-color: var(--border-focus); }
+.threshold-target { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; font-family: var(--font-mono); }
+.threshold-prob { font-size: 1.85rem; font-weight: 800; color: var(--text-primary); font-family: var(--font-mono); margin-bottom: 12px; }
+.progress-bar-bg { width: 100%; height: 6px; background: var(--bg-input); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, #0ea5e9, #6366f1); border-radius: 3px; transition: width 0.4s ease-in-out; }
+.threshold-benchmark { font-size: 0.725rem; color: var(--text-dim); }
+
+/* 6. 6-MODEL COMPARISON */
+.models-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+.model-card {
+  background: var(--bg-card-subtle); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); padding: 16px; display: flex;
+  flex-direction: column; gap: 12px; transition: border-color 0.15s ease-in-out;
+}
+.model-card:hover { border-color: var(--border-focus); }
+.model-card-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; }
+.model-card-name { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); }
+.model-card-type { font-size: 0.7rem; color: var(--text-dim); font-family: var(--font-mono); }
+.model-thresholds-list { display: flex; flex-direction: column; gap: 8px; }
+.model-threshold-row { display: flex; align-items: center; gap: 10px; }
+.model-threshold-label { font-size: 0.725rem; font-family: var(--font-mono); color: var(--text-muted); width: 48px; }
+.model-threshold-bar-wrap { flex: 1; }
+.model-threshold-val { font-size: 0.75rem; font-family: var(--font-mono); font-weight: 600; color: var(--text-primary); width: 42px; text-align: right; }
+
+.benchmark-table-wrap { margin-top: 10px; }
+.subsection-heading { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; }
+.table-responsive { width: 100%; overflow-x: auto; }
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; }
+.data-table th {
+  padding: 10px 14px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--text-muted); background: var(--bg-card-subtle);
+  border-bottom: 1px solid var(--border-subtle); white-space: nowrap;
+}
+.data-table td { padding: 11px 14px; border-bottom: 1px solid var(--border-subtle); color: var(--text-secondary); white-space: nowrap; }
+.data-table tr:hover td { background: var(--bg-card-elevated); }
+.data-table .row-strongest td { background: rgba(245, 158, 11, 0.08); }
+.multiplier-pill { padding: 2px 7px; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.825rem; }
+.multiplier-high { background: var(--color-success-bg); color: var(--color-success); }
+.multiplier-low { background: var(--bg-card-subtle); color: var(--text-muted); }
+.table-footnote { padding: 8px 12px; color: var(--text-dim); font-size: 0.75rem; }
+
+/* 7. METRICS & CHARTS */
+.metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.metric-card { background: var(--bg-card-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; }
+.metric-label { font-size: 0.725rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+.metric-val { font-size: 1.45rem; font-weight: 700; color: var(--text-primary); line-height: 1.1; margin-bottom: 4px; }
+.metric-sub { font-size: 0.725rem; color: var(--text-dim); }
+.charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.chart-card { background: var(--bg-card-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px; }
+.chart-header { margin-bottom: 12px; }
+.chart-title { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); }
+.chart-sub { font-size: 0.75rem; color: var(--text-dim); }
+.chart-container { width: 100%; height: 220px; }
+
+/* CSV FALLBACK */
+.upload-header-block { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.sample-actions { display: flex; gap: 8px; }
+.dropzone {
+  border: 2px dashed var(--border-subtle); background: var(--bg-card-subtle);
+  border-radius: var(--radius-lg); padding: 40px 20px; text-align: center;
+  cursor: pointer; position: relative; transition: all 0.2s ease-in-out; margin-bottom: 20px;
+}
+.dropzone:hover, .dropzone.drag-over { border-color: var(--border-focus); background: var(--bg-card-elevated); }
+.file-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.dropzone-icon-wrap {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 48px; height: 48px; border-radius: 50%; background: var(--bg-card-elevated);
+  color: var(--accent-primary); margin-bottom: 12px;
+}
+.dropzone-icon { width: 24px; height: 24px; }
+.dropzone-primary-text { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.dropzone-link { color: var(--accent-primary); text-decoration: underline; }
+.dropzone-secondary-text { font-size: 0.8rem; color: var(--text-muted); }
+.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.summary-card { background: var(--bg-card-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; display: flex; flex-direction: column; }
+.summary-label { font-size: 0.725rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+.summary-val { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+.summary-highlight { color: var(--accent-primary); }
+.alert { display: flex; align-items: flex-start; gap: 12px; border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 20px; }
+.alert-error { background: var(--color-danger-bg); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--color-danger); }
+.alert-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 4px; }
+.alert-list { font-size: 0.825rem; padding-left: 18px; }
+
+/* MODAL */
+.modal-dialog { border: none; background: transparent; padding: 0; margin: auto; max-width: 520px; width: 90%; border-radius: var(--radius-lg); }
+.modal-dialog::backdrop { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); }
+.modal-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); padding: 24px; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.modal-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+.modal-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; }
+.source-options { display: flex; flex-direction: column; gap: 10px; }
+.source-option {
+  display: flex; align-items: flex-start; gap: 12px; padding: 12px;
+  background: var(--bg-card-subtle); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); cursor: pointer; transition: all 0.15s ease-in-out;
+}
+.source-option:hover { background: var(--bg-card-elevated); border-color: var(--border-focus); }
+.source-info { display: flex; flex-direction: column; gap: 2px; }
+.source-title { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+.source-detail { font-size: 0.75rem; color: var(--text-muted); }
+.input-label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+.text-input {
+  width: 100%; padding: 8px 12px; background: var(--bg-card-subtle);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);
+  color: var(--text-primary); font-family: var(--font-mono); font-size: 0.85rem;
+}
+.text-input:focus { outline: none; border-color: var(--border-focus); }
+.snippet-box { background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 10px; font-size: 0.75rem; overflow-x: auto; }
+.modal-footer { margin-top: 20px; display: flex; justify-content: flex-end; }
+
+/* FOOTER */
+.app-footer { border-top: 1px solid var(--border-subtle); background: var(--bg-card); padding: 20px 0; margin-top: auto; }
+.footer-inner { text-align: center; }
+.footer-text { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px; }
+.footer-notice { font-size: 0.725rem; color: var(--text-dim); }
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .control-panel-grid { grid-template-columns: repeat(3, 1fr); }
+  .control-col-action { grid-column: span 3; align-items: stretch; }
+  .btn-live-action { width: 100%; }
+  .thresholds-grid { grid-template-columns: repeat(3, 1fr); }
+  .models-grid { grid-template-columns: repeat(2, 1fr); }
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .header-inner { flex-direction: column; align-items: stretch; }
+  .control-panel-grid { grid-template-columns: 1fr 1fr; }
+  .control-col-action { grid-column: span 2; }
+  .hero-top-row { flex-direction: column; }
+  .hero-spotlight { text-align: left; width: 100%; }
+  .consensus-stats-bar { grid-template-columns: 1fr; }
+  .thresholds-grid { grid-template-columns: repeat(2, 1fr); }
+  .models-grid { grid-template-columns: 1fr; }
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .control-panel-grid { grid-template-columns: 1fr; }
+  .control-col-action { grid-column: span 1; }
+  .thresholds-grid { grid-template-columns: 1fr; }
+  .metrics-grid { grid-template-columns: 1fr; }
+}
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================================
+       1. HEADER
+       ========================================================================= -->
+  <header class="app-header">
+    <div class="header-inner container">
+      <div class="brand">
+        <div class="brand-icon-wrap" aria-hidden="true">
+          <svg class="brand-logo" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="28" height="28" rx="8" fill="currentColor" fill-opacity="0.12"/>
+            <path d="M6 14L14 8L22 14L14 20L6 14Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M10 14H18M14 10V18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="14" cy="14" r="2.2" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title-wrap">
+            <span class="brand-title">Aviator ML Research</span>
+            <span class="badge badge-read-only">Read-Only Telemetry</span>
+          </div>
+          <span class="brand-subtitle">Empirical Predictability & Information Bounds in Crash Games</span>
+        </div>
+      </div>
+
+      <!-- Mode Switch Navigation -->
+      <nav class="mode-nav" aria-label="Dashboard mode switch">
+        <button id="tabLiveBtn" class="mode-tab active" type="button" aria-selected="true">
+          <span class="mode-pulse-dot" aria-hidden="true"></span>
+          <span>Live Research</span>
+        </button>
+        <button id="tabCsvBtn" class="mode-tab" type="button" aria-selected="false">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M4 1h8l3 3v11H1V1h3zm0 1H2v13h12V5h-3V2H4zm8 0v2h2l-2-2z"/>
+          </svg>
+          <span>Upload CSV</span>
+        </button>
+      </nav>
+
+      <!-- Header Controls: Source Config & Theme -->
+      <div class="header-tools">
+        <button id="sourceConfigBtn" class="btn-icon" aria-label="Configure Live Data Source" title="Source Settings">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M8 4.754a3.246 3.246 0 100 6.492 3.246 3.246 0 000-6.492zM9.146 8a1.146 1.146 0 11-2.292 0 1.146 1.146 0 012.292 0z"/>
+            <path d="M8 0a1 1 0 011 1v.38a6.52 6.52 0 011.666.69l.27-.27a1 1 0 011.414 0l.707.707a1 1 0 010 1.414l-.27.27c.28.514.515 1.077.69 1.666H15a1 1 0 011 1v1a1 1 0 01-1 1h-.523a6.52 6.52 0 01-.69 1.666l.27.27a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414 0l-.27-.27a6.52 6.52 0 01-1.666.69V15a1 1 0 01-1 1H7a1 1 0 01-1-1v-.523a6.52 6.52 0 01-1.666-.69l-.27.27a1 1 0 01-1.414 0l-.707-.707a1 1 0 010-1.414l.27-.27a6.52 6.52 0 01-.69-1.666H1a1 1 0 01-1-1V7a1 1 0 011-1h.523c.175-.589.41-1.152.69-1.666l-.27-.27a1 1 0 010-1.414l.707-.707a1 1 0 011.414 0l.27.27c.514-.28 1.077-.515 1.666-.69V1a1 1 0 011-1h2z"/>
+          </svg>
+        </button>
+        <button id="themeToggleBtn" class="btn-icon theme-toggle" aria-label="Toggle color theme" title="Toggle Light/Dark Theme">
+          <svg class="icon-moon" viewBox="0 0 20 20" fill="currentColor" width="16" height="16" aria-hidden="true">
+            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+          </svg>
+          <svg class="icon-sun" viewBox="0 0 20 20" fill="currentColor" width="16" height="16" aria-hidden="true">
+            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       MAIN DASHBOARD CONTAINER
+       ========================================================================= -->
+  <main class="container main-content">
+
+    <!-- =======================================================================
+         PRIMARY TAB: LIVE RESEARCH MODE
+         Hierarchy:
+         Header -> Live Status + Controls -> Round History -> Next Round Prediction ->
+         Threshold Probability Cards -> 6-Model Comparison -> Prediction vs Actual ->
+         Live Metrics
+         ======================================================================= -->
+    <div id="liveView" class="view-panel view-active">
+
+      <!-- 2. LIVE STATUS + CONTROLS -->
+      <section class="section-card control-panel-card" aria-label="Live stream controls and status">
+        <div class="control-panel-grid">
+          
+          <!-- Connection Status Pill -->
+          <div class="control-col">
+            <span class="control-label">Stream Status</span>
+            <div class="control-status-wrap">
+              <span id="liveConnDot" class="status-indicator-dot status-dot-offline"></span>
+              <span id="liveConnStatus" class="control-status-text">Disconnected</span>
+            </div>
+          </div>
+
+          <!-- Round Stage Indicator -->
+          <div class="control-col">
+            <span class="control-label">Game Stage</span>
+            <div class="stage-badge-wrap">
+              <span id="liveStageBadge" class="stage-badge stage-idle" role="status">
+                <span id="liveStageText">IDLE</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Active Round ID -->
+          <div class="control-col">
+            <span class="control-label">Active Round</span>
+            <span id="liveRoundId" class="control-value font-mono">—</span>
+          </div>
+
+          <!-- Latest Result Multiplier -->
+          <div class="control-col">
+            <span class="control-label">Latest Multiplier</span>
+            <span id="liveLatestMult" class="control-value font-mono mult-highlight">—</span>
+          </div>
+
+          <!-- Primary Connect / Disconnect Action Button -->
+          <div class="control-col control-col-action">
+            <button id="liveConnectBtn" class="btn btn-live-action" type="button" aria-pressed="false">
+              <span class="btn-live-pulse" aria-hidden="true"></span>
+              <span id="liveConnectText">Connect Live Data</span>
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- OBSERVER CONNECTION & STAKE TELEMETRY MONITOR -->
+      <section class="section-card observer-monitor-card" id="observerMonitorSection" aria-labelledby="obsMonitorTitle">
+        <div class="section-sub-header">
+          <div class="section-sub-title-wrap">
+            <h2 id="obsMonitorTitle" class="section-sub-title">Stake Aviator Telemetry Bridge</h2>
+            <span id="obsInstalledBadge" class="badge badge-warning">Observer: Not Installed</span>
+            <span id="obsBridgeBadge" class="badge badge-warning">Bridge: Disconnected</span>
+            <span id="obsReceivingBadge" class="badge badge-warning">Frames: 0 Received</span>
+          </div>
+          <div class="obs-actions-row">
+            <button id="launchBridgeBtn" class="btn btn-secondary btn-sm" type="button" title="Launch companion bridge window">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1.002 1.002 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4.018 4.018 0 0 1-.128-1.287z"/><path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 0 0-4.243-4.243L6.586 4.672z"/></svg>
+              <span>Launch Telemetry Bridge</span>
+            </button>
+            <button id="toggleGuideBtn" class="btn btn-secondary btn-sm" type="button" aria-expanded="true">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+              <span id="toggleGuideText">Hide Setup Instructions</span>
+            </button>
+            <button id="copySnippetBtn" class="btn btn-primary btn-sm" type="button">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>
+              <span id="copySnippetText">Copy Observer Snippet</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3-STAGE CONNECTION STEPPER: Observer Installed -> Bridge Connected -> Frames Received (Requirement 3) -->
+        <div class="observer-stepper-wrap" role="region" aria-label="Observer connection progress">
+          <div class="stepper-track">
+            <div id="stepInstalled" class="stepper-step">
+              <div class="step-icon-circle">1</div>
+              <div class="step-text-wrap">
+                <span class="step-label">Stage 1</span>
+                <span class="step-title" id="stepInstalledTitle">Observer Installed</span>
+              </div>
+            </div>
+            <div class="stepper-connector" id="connector1"></div>
+            <div id="stepBridge" class="stepper-step">
+              <div class="step-icon-circle">2</div>
+              <div class="step-text-wrap">
+                <span class="step-label">Stage 2</span>
+                <span class="step-title" id="stepBridgeTitle">Bridge Connected</span>
+              </div>
+            </div>
+            <div class="stepper-connector" id="connector2"></div>
+            <div id="stepFramesReceived" class="stepper-step">
+              <div class="step-icon-circle">3</div>
+              <div class="step-text-wrap">
+                <span class="step-label">Stage 3</span>
+                <span class="step-title" id="stepFramesTitle">Frames Received</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DIAGNOSTIC BANNER (Requirement 4 & 6) -->
+        <div id="obsDiagnosticBanner" class="obs-diagnostic-alert alert-warning" role="alert">
+          <div class="alert-icon-wrap">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
+          </div>
+          <div class="alert-content">
+            <span class="alert-heading" id="obsDiagnosticHeading">Diagnostic Status: Setup Telemetry Bridge</span>
+            <p class="alert-message" id="obsDiagnosticReason">
+              Cross-origin browser security prevents the HTTPS Aviator iframe from POSTing directly to localhost. Click 'Launch Telemetry Bridge' and paste snippet into DevTools console.
+            </p>
+          </div>
+        </div>
+
+        <!-- TELEMETRY METRICS GRID (Requirement 1 & 5) -->
+        <div class="observer-metrics-grid">
+          <div class="obs-metric-card">
+            <span class="obs-metric-label">Observer Installed</span>
+            <span id="obsMetricInstalled" class="obs-metric-val font-mono" style="color: var(--color-warning);">NO</span>
+            <span id="obsMetricInstalledSub" class="obs-metric-sub">Not detected</span>
+          </div>
+          <div class="obs-metric-card">
+            <span class="obs-metric-label">Bridge Connected</span>
+            <span id="obsMetricBridge" class="obs-metric-val font-mono" style="color: var(--color-warning);">NO</span>
+            <span id="obsMetricBridgeSub" class="obs-metric-sub">Local gateway</span>
+          </div>
+          <div class="obs-metric-card">
+            <span class="obs-metric-label">Sockets Detected</span>
+            <span id="obsMetricSockets" class="obs-metric-val font-mono" style="color: #38bdf8;">0</span>
+            <span id="obsMetricSocketsSub" class="obs-metric-sub text-truncate">No active sockets</span>
+          </div>
+          <div class="obs-metric-card">
+            <span class="obs-metric-label">Raw Game Frames</span>
+            <span id="obsMetricGameFrames" class="obs-metric-val font-mono" style="color: #10b981;">0</span>
+            <span class="obs-metric-sub">Captured from WebSocket</span>
+          </div>
+          <div class="obs-metric-card">
+            <span class="obs-metric-label">Total Ingested Frames</span>
+            <span id="obsMetricFrames" class="obs-metric-val font-mono">0</span>
+            <span id="obsMetricFramesSub" class="obs-metric-sub">Raw ingest packets</span>
+          </div>
+          <div class="obs-metric-card">
+            <span class="obs-metric-label">Parser Attempts</span>
+            <span id="obsMetricParserAttempts" class="obs-metric-val font-mono">0</span>
+            <span class="obs-metric-sub">Frames parsed</span>
+          </div>
+          <div class="obs-metric-card">
+            <span class="obs-metric-label">Recognized Events</span>
+            <span id="obsMetricEvents" class="obs-metric-val font-mono">0</span>
+            <span class="obs-metric-sub">Round lifecycle events</span>
+          </div>
+          <div class="obs-metric-card">
+            <span class="obs-metric-label">Last Raw Frame Type</span>
+            <span id="obsMetricLastType" class="obs-metric-val font-mono text-truncate">—</span>
+            <span id="obsMetricLastParsedSub" class="obs-metric-sub text-truncate">Event classification</span>
+          </div>
+          <div class="obs-metric-card">
+            <span class="obs-metric-label">Last Multiplier</span>
+            <span id="obsMetricLastMultiplier" class="obs-metric-val font-mono mult-highlight">—</span>
+            <span class="obs-metric-sub">Final crash multiplier</span>
+          </div>
+        </div>
+
+        <!-- CLEAR SETUP INSTRUCTIONS (Requirement 3) -->
+        <div id="observerInstructionsCard" class="observer-instructions-panel">
+          <div class="instructions-header">
+            <h3 class="instructions-title">How to Connect Real Stake Aviator Telemetry Bridge (Read-Only)</h3>
+            <span class="instructions-pill">Strict Read-Only &bull; No Betting Automation</span>
+          </div>
+          <div class="instructions-steps-grid">
+            <div class="step-card">
+              <div class="step-number">1</div>
+              <div class="step-body">
+                <strong>Launch Telemetry Bridge</strong>
+                <p>Click <em>Launch Telemetry Bridge</em> above. A small companion window opens at <code>/bridge.html</code> on localhost, establishing the secure cross-origin relay.</p>
+              </div>
+            </div>
+            <div class="step-card">
+              <div class="step-number">2</div>
+              <div class="step-body">
+                <strong>Open Stake Aviator</strong>
+                <p>Open Stake in your browser and navigate to the Aviator crash game.</p>
+              </div>
+            </div>
+            <div class="step-card">
+              <div class="step-number">3</div>
+              <div class="step-body">
+                <strong>Open DevTools &amp; Select Context</strong>
+                <p>Press <kbd>F12</kbd> (Console tab), then switch the context dropdown from <code>top</code> to <code>aviator-next.spribegaming.com</code>.</p>
+              </div>
+            </div>
+            <div class="step-card">
+              <div class="step-number">4</div>
+              <div class="step-body">
+                <strong>Paste &amp; Run Observer</strong>
+                <p>Copy the snippet below, paste into Console, and press <kbd>Enter</kbd>. Verify <code>typeof window.sendAviatorTestFrame === 'function'</code>.</p>
+              </div>
+            </div>
+            <div class="step-card">
+              <div class="step-number">5</div>
+              <div class="step-body">
+                <strong>Dispatch Test Frame</strong>
+                <p>Run <code>sendAviatorTestFrame(2.45)</code> in DevTools console. The frame relays via Bridge &rarr; <code>/api/live/ingest</code> &rarr; ML models &rarr; Dashboard!</p>
+              </div>
+            </div>
+            <div class="step-card">
+              <div class="step-number">6</div>
+              <div class="step-body">
+                <strong>Watch Live Stages</strong>
+                <p>Watch the 3 stages activate: <em>Observer Installed &rarr; Bridge Connected &rarr; Frames Received</em>.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- DIRECT SNIPPET BOX FOR INSTANT 1-CLICK COPY / SELECT ALL -->
+          <div class="snippet-preview-box" style="margin-top: 14px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">
+                DevTools Console Observer Snippet (Paste into <code>aviator-next.spribegaming.com</code>):
+              </span>
+              <button id="copySnippetDirectBtn" class="btn btn-primary btn-xs" type="button">Copy Snippet</button>
+            </div>
+            <textarea id="observerSnippetTextarea" class="observer-code-textarea" readonly rows="6" style="width: 100%; font-family: var(--font-mono); font-size: 0.725rem; background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 10px; resize: vertical;"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. ROUND HISTORY -->
+      <section class="section-card history-section" aria-labelledby="historyStripTitle">
+        <div class="section-sub-header">
+          <div class="section-sub-title-wrap">
+            <h2 id="historyStripTitle" class="section-sub-title">Round History</h2>
+            <span class="section-badge-counter">Recent Multipliers</span>
+          </div>
+          <div class="history-legend">
+            <span class="legend-chip chip-low">&lt; 2.0x</span>
+            <span class="legend-chip chip-medium">2.0x &ndash; 9.99x</span>
+            <span class="legend-chip chip-high">&ge; 10.0x</span>
+          </div>
+        </div>
+        <div class="history-strip-container">
+          <div id="historyStrip" class="history-strip" role="list">
+            <!-- Dynamically populated chips -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. NEXT ROUND PREDICTION (HERO CARD) -->
+      <section class="section-card next-round-hero-card" aria-labelledby="nextRoundTitle">
+        <div class="hero-top-row">
+          <div class="hero-meta">
+            <div class="hero-badge-row">
+              <span class="badge badge-accent">Pre-Round Causal Forecast</span>
+              <span class="badge badge-calibrated">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z"/></svg>
+                <span id="calibrationStatusText">Well-Calibrated (Platt/Isotonic)</span>
+              </span>
+            </div>
+            <h2 id="nextRoundTitle" class="hero-round-heading">Next Round <span id="nextRoundId" class="hero-round-id font-mono">#—</span></h2>
+            <p class="hero-desc">Causal feature extraction locks strictly before round inception. Zero lookahead leakage guaranteed.</p>
+          </div>
+
+          <!-- Highlight Consensus Metric -->
+          <div class="hero-spotlight">
+            <span class="spotlight-label">Weighted Ensemble Target P(&ge; 2.0x)</span>
+            <div class="spotlight-value-wrap">
+              <span id="consensusEnsembleVal" class="spotlight-value font-mono">—</span>
+            </div>
+            <span class="spotlight-fair font-mono">Fair RTP: 48.50%</span>
+          </div>
+        </div>
+
+        <!-- Consensus Breakdown Bar -->
+        <div class="consensus-stats-bar">
+          <div class="consensus-stat-item">
+            <span class="consensus-stat-label">6-Model Consensus Mean</span>
+            <span id="consensusMeanVal" class="consensus-stat-val font-mono">—</span>
+          </div>
+          <div class="consensus-stat-item">
+            <span class="consensus-stat-label">Model Min &ndash; Max Spread</span>
+            <span id="consensusSpreadVal" class="consensus-stat-val font-mono">—</span>
+          </div>
+          <div class="consensus-stat-item">
+            <span class="consensus-stat-label">Theoretical RTP 97% Benchmark</span>
+            <span id="theoreticalFairVal" class="consensus-stat-val font-mono text-muted">48.50% (at 2.0x)</span>
+          </div>
+        </div>
+
+        <!-- Scientific Disclaimer Notice -->
+        <div class="disclaimer-callout">
+          <div class="disclaimer-icon-wrap" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <p class="disclaimer-body">
+            <strong>Model estimates, not guaranteed outcomes.</strong> Statistical models operate within fundamental information bounds. Research demonstrates Aviator rounds exhibit zero out-of-sample predictability (ROC-AUC &approx; 0.500) and negative mathematical expectation (&minus;3% house edge).
+          </p>
+        </div>
+      </section>
+
+      <!-- 5. THRESHOLD PROBABILITY CARDS -->
+      <section class="section-card threshold-cards-section" aria-labelledby="thresholdsSectionTitle">
+        <div class="section-header-block">
+          <h2 id="thresholdsSectionTitle" class="section-heading">Threshold Probability Estimates</h2>
+          <p class="section-subtext">Pre-round probability estimates across discrete payout multipliers compared against theoretical fair-game limits.</p>
+        </div>
+
+        <div class="thresholds-grid" id="mainThresholdsGrid">
+          <!-- Dynamically populated cards for 1.5x, 2.0x, 3.0x, 5.0x, 10.0x -->
+        </div>
+      </section>
+
+      <!-- 6. 6-MODEL COMPARISON -->
+      <section class="section-card models-comparison-section" aria-labelledby="modelsSectionTitle">
+        <div class="section-header-block">
+          <h2 id="modelsSectionTitle" class="section-heading">6-Model Architecture Comparison</h2>
+          <p class="section-subtext">Multi-threshold output distributions across all six verified models, paired with empirical out-of-sample benchmark metrics.</p>
+        </div>
+
+        <!-- 6 Models Probability Cards Grid -->
+        <div class="models-grid" id="liveModelsGrid">
+          <!-- Populated by JavaScript -->
+        </div>
+
+        <!-- Benchmark Comparison Table -->
+        <div class="benchmark-table-wrap">
+          <h3 class="subsection-heading">Empirical Test Benchmark (Held-Out Test Set, Target &ge; 2.0x)</h3>
+          <div class="table-responsive">
+            <table class="data-table" id="liveComparisonTable">
+              <thead>
+                <tr>
+                  <th>Model Architecture</th>
+                  <th class="text-right">ROC-AUC</th>
+                  <th class="text-right">Brier Score</th>
+                  <th class="text-right">Log Loss</th>
+                  <th>Empirical Status</th>
+                </tr>
+              </thead>
+              <tbody id="liveComparisonTableBody">
+                <!-- Populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+          <div class="table-footnote">
+            <small>Empirical observation: Out-of-sample ROC-AUC for all architectures centers on 0.500 (random chance). The Historical Baseline yields the lowest Log Loss and Brier Score.</small>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. PREDICTION VS ACTUAL -->
+      <section class="section-card evaluation-section" aria-labelledby="evalSectionTitle">
+        <div class="section-header-block">
+          <h2 id="evalSectionTitle" class="section-heading">Live Prediction vs. Actual Outcome Tracker</h2>
+          <p class="section-subtext">Sequential audit trail: records every pre-round prediction alongside the true outcome upon round crash.</p>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="liveEvalTable">
+            <thead>
+              <tr>
+                <th>Round ID</th>
+                <th class="text-right">Pre-Round P(&ge; 2.0x)</th>
+                <th class="text-right">Actual Multiplier</th>
+                <th>Outcome (&ge; 2.0x)</th>
+                <th class="text-right">Brier Loss</th>
+                <th>Settled Timestamp</th>
+              </tr>
+            </thead>
+            <tbody id="liveEvalTableBody">
+              <tr><td colspan="6" class="text-muted text-center py-4">Awaiting completed live rounds in this session...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footnote">
+          <small>Causal verification: Pre-round predictions are committed and displayed prior to round liftoff. Brier loss is defined as $(y - \hat{p})^2$.</small>
+        </div>
+      </section>
+
+      <!-- 8. LIVE METRICS & VISUALIZATIONS -->
+      <section class="section-card metrics-section" aria-labelledby="metricsSectionTitle">
+        <div class="section-header-block">
+          <h2 id="metricsSectionTitle" class="section-heading">Live Session Metrics & Research Visualizations</h2>
+          <p class="section-subtext">Cumulative running evaluation loss and live graphical distributions for the current session.</p>
+        </div>
+
+        <!-- 4-Card Running Metrics Dashboard -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-label">Evaluated Live Rounds</span>
+            <span id="liveRoundsCount" class="metric-val font-mono">0</span>
+            <span class="metric-sub">Observed this session</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Running Brier Score (&ge; 2.0x)</span>
+            <span id="liveBrierVal" class="metric-val font-mono">0.2500</span>
+            <span class="metric-sub">Calibrated baseline: 0.2498</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Running Log Loss (&ge; 2.0x)</span>
+            <span id="liveLogLossVal" class="metric-val font-mono">0.6931</span>
+            <span class="metric-sub">Cross-entropy baseline: 0.6928</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Actual Hit Rate (&ge; 2.0x)</span>
+            <span id="liveHitRateVal" class="metric-val font-mono">0.0% <span class="text-dim text-xs">(exp. 48.5%)</span></span>
+            <span class="metric-sub">Theoretical RTP 97%: 48.5%</span>
+          </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Recent Multiplier History</h3>
+              <span class="chart-sub">Sequence vs 2.0x threshold</span>
+            </div>
+            <div id="liveChartHistoryContainer" class="chart-container"></div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Probability by Threshold Target</h3>
+              <span class="chart-sub">Model Consensus vs. Theoretical Fair Game</span>
+            </div>
+            <div id="liveChartThresholdsContainer" class="chart-container"></div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- END #liveView -->
+
+    <!-- =======================================================================
+         SECONDARY TAB: CSV UPLOAD MODE (FALLBACK)
+         ======================================================================= -->
+    <div id="csvView" class="view-panel" style="display: none;">
+      
+      <section class="section-card upload-section" aria-labelledby="uploadSectionTitle">
+        <div class="section-header-block upload-header-block">
+          <div>
+            <h2 id="uploadSectionTitle" class="section-heading">Upload Round Records</h2>
+            <p class="section-subtext">Upload historical round records for batch validation, causal feature extraction, and multi-model inference.</p>
+          </div>
+          <div class="sample-actions">
+            <button id="btnSampleReal" class="btn btn-secondary btn-sm" type="button">Load Real Data (22bet)</button>
+            <button id="btnSampleSynth" class="btn btn-secondary btn-sm" type="button">Load Synthetic Sample</button>
+          </div>
+        </div>
+
+        <!-- Drag & Drop Zone -->
+        <div id="dropzone" class="dropzone" tabindex="0" role="region" aria-label="CSV file drop zone">
+          <input type="file" id="fileInput" class="file-input" accept=".csv" aria-label="Upload CSV File">
+          <div class="dropzone-content">
+            <div class="dropzone-icon-wrap" aria-hidden="true">
+              <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <div class="dropzone-text">
+              <p class="dropzone-primary-text">Drag and drop your Aviator CSV file here, or <span class="dropzone-link">browse files</span></p>
+              <p class="dropzone-secondary-text">Required schema: <code>round_id</code>, <code>timestamp</code>, <code>multiplier</code> (Minimum 51 sequential rounds)</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Validation Error Alert Box -->
+        <div id="csvErrorBox" class="alert alert-error" role="alert" style="display: none;">
+          <div class="alert-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="alert-content">
+            <h3 class="alert-title">Dataset Validation Error</h3>
+            <ul id="csvErrorList" class="alert-list"></ul>
+          </div>
+        </div>
+
+        <!-- CSV Summary Cards -->
+        <div id="csvSummary" class="summary-grid" style="display: none;">
+          <div class="summary-card">
+            <span class="summary-label">Uploaded File</span>
+            <span id="csvMetaFilename" class="summary-val text-truncate">—</span>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">Validated Rounds</span>
+            <span id="csvMetaRounds" class="summary-val font-mono">—</span>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">Time Window</span>
+            <span id="csvMetaTimeRange" class="summary-val text-sm font-mono">—</span>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">Latest Multiplier</span>
+            <span id="csvMetaLatestMultiplier" class="summary-val font-mono summary-highlight">—</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- CSV Processed Results Area -->
+      <div id="csvResultsArea" style="display: none;"></div>
+
+    </div><!-- END #csvView -->
+
+  </main>
+
+  <!-- =========================================================================
+       SOURCE CONFIGURATION DIALOG
+       ========================================================================= -->
+  <dialog id="sourceModal" class="modal-dialog" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalTitle" class="modal-title">Live Data Source Configuration</h3>
+        <button id="closeModalBtn" class="btn-icon" aria-label="Close dialog">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Select how the research dashboard ingests real-time Aviator round events:</p>
+        
+        <div class="source-options">
+          <label class="source-option">
+            <input type="radio" name="sourceChoice" value="browser_observer" checked>
+            <div class="source-info">
+              <span class="source-title">Stake Aviator Browser Observer (Live Real-Time)</span>
+              <span class="source-detail">Passive read-only JavaScript telemetry hook and bridge for open Stake Aviator iframe (aviator-next.spribegaming.com).</span>
+            </div>
+          </label>
+
+          <label class="source-option">
+            <input type="radio" name="sourceChoice" value="sample_stream">
+            <div class="source-info">
+              <span class="source-title">Recorded Replay Stream (Demo / Test Mode)</span>
+              <span class="source-detail">Replays authentic historical Aviator rounds through the full waiting &rarr; flying &rarr; crashed lifecycle at realistic 4s intervals.</span>
+            </div>
+          </label>
+
+          <label class="source-option">
+            <input type="radio" name="sourceChoice" value="websocket">
+            <div class="source-info">
+              <span class="source-title">Direct External WebSocket</span>
+              <span class="source-detail">Connect directly to an external WebSocket telemetry feed URL.</span>
+            </div>
+          </label>
+        </div>
+
+        <div id="wsUrlInputWrap" style="display: none; margin-top: 14px;">
+          <label class="input-label" for="wsUrlInput">WebSocket URL</label>
+          <input type="text" id="wsUrlInput" class="text-input" placeholder="ws://localhost:8080/events">
+        </div>
+
+        <div id="observerSnippetWrap" style="display: none; margin-top: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="input-label" style="margin-bottom: 0;">DevTools Console Observer Snippet</label>
+            <button id="copyModalSnippetBtn" class="btn btn-secondary btn-xs" type="button">Copy Script</button>
+          </div>
+          <p class="text-xs text-muted" style="margin-bottom: 8px;">
+            ⚠️ In DevTools Console, switch context from <code>top</code> to the <strong>Aviator iframe</strong> (e.g. <code>spribe</code> or <code>aviator-next</code>) before pasting!
+          </p>
+          <div class="snippet-box">
+            <pre><code>// Paste in browser DevTools Console (Read-Only):
+(function(){
+  const OriginalWS = window.WebSocket;
+  window.WebSocket = function(...args) {
+    const ws = new OriginalWS(...args);
+    ws.addEventListener('message', e => {
+      if (typeof e.data === 'string') {
+        fetch('http://127.0.0.1:8000/api/live/ingest', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({raw_frame: e.data})
+        }).catch(()=>{});
+      }
+    });
+    return ws;
+  };
+  window.WebSocket.prototype = OriginalWS.prototype;
+})();</code></pre>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="applySourceBtn" class="btn btn-primary" type="button">Apply & Reconnect</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- =========================================================================
+       FOOTER
+       ========================================================================= -->
+  <footer class="app-footer">
+    <div class="container footer-inner">
+      <p class="footer-text">Aviator ML Research &copy; 2026. Strictly an offline academic & ML information-theoretic evaluation system.</p>
+      <p class="footer-notice">Does not provide gambling advice, automatic wagering, or account automation. Strict out-of-sample causal constraints enforced.</p>
+    </div>
+  </footer>
+
+  <script src="/static/app.js?v=2.2"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{
+  "experiment_id": "exp_lstm_10.0x_seq10_1791402627",
+  "model_name": "LSTM",
+  "task_type": "threshold_classification",
+  "threshold": "10.0x",
+  "dataset_version": "dataset_v001",
+  "feature_version": "features_v001",
+  "train_range": {
+    "samples": 6955,
+    "seq_len": 10
+  },
+  "validation_range": {
+    "samples": 1482,
+    "seq_len": 10
+  },
+  "test_range": null,
+  "hyperparameters": {
+    "sequence_length": 10,
+    "hidden_size": 64,
+    "num_layers": 1,
+    "dropout": 0.2,
+    "learning_rate": 0.001,
+    "batch_size": 64,
+    "epochs": 50,
+    "device": "cpu",
+    "best_val_loss": 0.89613
+  },
+  "random_seed": 42,
+  "training_time_sec": 3.4806,
+  "inference_time_sec": 0.0213,
+  "metrics": {
+    "accuracy": 0.42038,
+    "balanced_accuracy": 0.50244,
+    "precision": 0.09245,
+    "recall": 0.60294,
+    "f1": 0.16031,
+    "roc_auc": 0.50242,
+    "pr_auc": 0.09524,
+    "log_loss": 0.70002,
+    "brier_score": 0.25344,
+    "ece": 0.41159
+  },
+  "timestamp": "2026-10-07T19:50:27.157384+00:00"
+}

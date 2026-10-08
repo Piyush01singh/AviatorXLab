@@ -1,0 +1,6 @@
+strategy,target,total_rounds,total_bets,win_rate,net_profit,final_balance,roi_pct,max_drawdown,max_drawdown_pct,profit_factor
+Always Enter (Baseline),2.0x,2388,1326,0.4623,-1000.0,0.0,-7.54,1130.0,100.0,0.86
+Never Enter (Baseline),2.0x,2388,0,0.0,0.0,1000.0,0.0,0.0,0.0,0.0
+Threshold P >= 0.55,2.0x,2388,70,0.5143,20.0,1020.0,2.86,40.0,3.92,1.059
+Threshold P >= 0.60,2.0x,2388,0,0.0,0.0,1000.0,0.0,0.0,0.0,0.0
+Positive EV (EV >= 0.02),2.0x,2388,347,0.4582,-290.0,710.0,-8.36,370.0,34.26,0.846

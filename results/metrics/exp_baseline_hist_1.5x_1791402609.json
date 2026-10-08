@@ -1,0 +1,33 @@
+{
+  "experiment_id": "exp_baseline_hist_1.5x_1791402609",
+  "model_name": "Historical Baseline",
+  "task_type": "threshold_classification",
+  "threshold": "1.5x",
+  "dataset_version": "dataset_v001",
+  "feature_version": "features_v001",
+  "train_range": {
+    "samples": 6965
+  },
+  "validation_range": {
+    "samples": 1492
+  },
+  "test_range": null,
+  "hyperparameters": {
+    "window": "all_train"
+  },
+  "random_seed": 42,
+  "training_time_sec": 0.001,
+  "inference_time_sec": 0.001,
+  "metrics": {
+    "accuracy": 0.62869,
+    "balanced_accuracy": 0.5,
+    "precision": 0.62869,
+    "recall": 1.0,
+    "f1": 0.77202,
+    "roc_auc": 0.5,
+    "pr_auc": 0.62869,
+    "log_loss": 0.65982,
+    "brier_score": 0.23352
+  },
+  "timestamp": "2026-10-07T19:50:09.793226+00:00"
+}

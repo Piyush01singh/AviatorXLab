@@ -1,0 +1,34 @@
+{
+  "experiment_id": "exp_xgb_reg_1791402614",
+  "model_name": "XGBoost Regressor",
+  "task_type": "multiplier_regression",
+  "threshold": null,
+  "dataset_version": "dataset_v001",
+  "feature_version": "features_v001",
+  "train_range": {
+    "samples": 6965
+  },
+  "validation_range": {
+    "samples": 1492
+  },
+  "test_range": null,
+  "hyperparameters": {
+    "n_estimators": 200,
+    "max_depth": 4,
+    "learning_rate": 0.05,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "early_stopping_rounds": 15,
+    "eval_metric": "logloss"
+  },
+  "random_seed": 42,
+  "training_time_sec": 0.05,
+  "inference_time_sec": 0.005,
+  "metrics": {
+    "mae": 3.3864,
+    "rmse": 12.04852,
+    "r2": 0.84014,
+    "median_ae": 1.75672
+  },
+  "timestamp": "2026-10-07T19:50:14.658979+00:00"
+}

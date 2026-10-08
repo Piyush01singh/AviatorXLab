@@ -1,0 +1,11 @@
+variable,stage_revealed,is_pre_round,leakage_risk,correlation_with_target,p_value,verdict
+round_id (UUIDv4),Pre-Round (Assigned at round initiation),True,None (Entropy audit confirms random UUIDv4 RFC 4122),r=0.00176,0.5770,Independent noise (0 predictive bits)
+round_id (Sequential Integer in 22bet),Pre-Round (Deterministic counter t),True,None (Monotonic integer sequence),r=-0.0012,0.8790,Independent sequence index
+timestamp[t] (Completion Timestamp),POST-ROUND (Logged when round concludes),False,CRITICAL LEAKAGE: Contains flight duration f(M_t),r=+0.2976 (log M_t),< 1e-17,POST-ROUND ARTIFACT (Must be shifted by >= 1)
+time_since_previous_round (Shifted t-1 vs t-2),Pre-Round (Prior completed round duration),True,Guarded (Shifted strictly prior to round t),r=-0.0036,0.2518,Independent inter-round pause
+hour_of_day (Shifted prior round),Pre-Round (Clock time at betting phase),True,None (Calendar metadata),r=0.00104 (Chi2=28.03),0.2145,Statistically independent of crash outcome
+day_of_week (Shifted prior round),Pre-Round (Calendar metadata),True,None (Calendar metadata),r=-0.00126 (Chi2=3.28),0.7732,Statistically independent of crash outcome
+server_seed_hash (SHA-256 commitment),Pre-Round (Committed in Provably Fair UI),True,None (Cryptographically preimage resistant),r=0.0000 (computationally intractable),N/A,Zero Shannon mutual information
+server_seed (Plaintext),POST-ROUND (Revealed only after round concludes),False,FATAL LEAKAGE: Unlocks deterministic outcome,Deterministic when combined with client seeds,N/A,Strictly post-round; never available beforehand
+client_seeds (First 3 wagers),At betting close / Round start,True,Unbiased entropy injection by independent players,Independent entropy source,N/A,Renders combined SHA-512 unpredictable before bets close
+flight_duration / ticks,POST-ROUND / In-Flight,False,CRITICAL: Strictly monotonic with multiplier,r > 0.95,< 1e-100,In-flight / post-round variable

@@ -1,0 +1,44 @@
+{
+  "dataset_version": "real_dataset_winpesa_v001",
+  "row_count": 104323,
+  "date_range": {
+    "start": "2024-04-13 19:00:15.874660+00:00",
+    "end": "2024-05-19 16:52:31.062615+00:00"
+  },
+  "columns": [
+    "round_id",
+    "timestamp",
+    "multiplier"
+  ],
+  "missing_values": {
+    "round_id": 0,
+    "timestamp": 0,
+    "multiplier": 0
+  },
+  "sha256": "889fec288a739d7a5e77487618bcda34b595583a3c7a0554544281ef3f38558c",
+  "initial_rows": 104323,
+  "final_rows": 104323,
+  "dropped_invalid_timestamps": 0,
+  "dropped_invalid_multipliers": 0,
+  "dropped_duplicate_records": 0,
+  "dropped_duplicate_rounds": 0,
+  "file_name": "aviator_winpesa_historical.csv",
+  "raw_path": "data\\raw\\aviator_winpesa_historical.csv",
+  "rows": 104323,
+  "date_start": "2024-04-13T19:00:15.874660+00:00",
+  "date_end": "2024-05-19T16:52:31.062615+00:00",
+  "time_span_days": 35.91,
+  "min_multiplier": 1.0,
+  "median_multiplier": 1.93,
+  "mean_multiplier": 16.65382120912934,
+  "max_multiplier": 432955.52,
+  "source_repo": "ReubenDataSci/Aviator-Data-Analysis-BETGR8-BETIKA-ODIBETS-WINPESA",
+  "source_author": "ReubenDataSci / Warui Ngugi (Kaggle)",
+  "source_file": "aviator_dataset.csv",
+  "source_sha256": "de2493209921ba5286496e56cc59a9435f339e4534b29e28be040508c4f10fce",
+  "game_engine": "Spribe Aviator (Provably Fair SHA-512)",
+  "operator": "WINPESA",
+  "clean_rows": 104323,
+  "clean_start": "2024-04-13T19:00:15.874660+00:00",
+  "clean_end": "2024-05-19T16:52:31.062615+00:00"
+}

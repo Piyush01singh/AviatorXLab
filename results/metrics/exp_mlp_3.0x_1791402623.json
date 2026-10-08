@@ -1,0 +1,43 @@
+{
+  "experiment_id": "exp_mlp_3.0x_1791402623",
+  "model_name": "MLP",
+  "task_type": "threshold_classification",
+  "threshold": "3.0x",
+  "dataset_version": "dataset_v001",
+  "feature_version": "features_v001",
+  "train_range": {
+    "samples": 6965
+  },
+  "validation_range": {
+    "samples": 1492
+  },
+  "test_range": null,
+  "hyperparameters": {
+    "hidden_dims": [
+      64,
+      32
+    ],
+    "dropout": 0.2,
+    "learning_rate": 0.001,
+    "batch_size": 64,
+    "epochs": 50,
+    "device": "cpu",
+    "best_val_loss": 0.32151
+  },
+  "random_seed": 42,
+  "training_time_sec": 8.8044,
+  "inference_time_sec": 0.0083,
+  "metrics": {
+    "accuracy": 0.84987,
+    "balanced_accuracy": 0.77567,
+    "precision": 0.84142,
+    "recall": 0.5977,
+    "f1": 0.69892,
+    "roc_auc": 0.88553,
+    "pr_auc": 0.82317,
+    "log_loss": 0.33869,
+    "brier_score": 0.1089,
+    "ece": 0.0324
+  },
+  "timestamp": "2026-10-07T19:50:23.522084+00:00"
+}

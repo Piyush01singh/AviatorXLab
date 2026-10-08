@@ -1,0 +1,27 @@
+{
+  "dataset_version": "dataset_v001",
+  "row_count": 10000,
+  "date_range": {
+    "start": "2026-01-01 00:00:13.901146",
+    "end": "2026-01-02 14:31:03.354978"
+  },
+  "columns": [
+    "round_id",
+    "timestamp",
+    "multiplier",
+    "data_source"
+  ],
+  "missing_values": {
+    "round_id": 0,
+    "timestamp": 0,
+    "multiplier": 0,
+    "data_source": 0
+  },
+  "sha256": "7b72b460c2505ec7cb4e2affca2d3b53853acab374194583c2875dfdc027e639",
+  "initial_rows": 10000,
+  "final_rows": 10000,
+  "dropped_invalid_timestamps": 0,
+  "dropped_invalid_multipliers": 0,
+  "dropped_duplicate_records": 0,
+  "dropped_duplicate_rounds": 0
+}

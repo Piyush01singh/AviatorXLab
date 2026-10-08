@@ -1,0 +1,38 @@
+{
+  "experiment_id": "exp_logistic_10.0x_1791401650",
+  "model_name": "Logistic Regression",
+  "task_type": "threshold_classification",
+  "threshold": "10.0x",
+  "dataset_version": "dataset_v001",
+  "feature_version": "features_v001",
+  "train_range": {
+    "samples": 6965
+  },
+  "validation_range": {
+    "samples": 1492
+  },
+  "test_range": null,
+  "hyperparameters": {
+    "C": 1.0,
+    "penalty": "l2",
+    "solver": "lbfgs",
+    "max_iter": 1000,
+    "class_weight": null
+  },
+  "random_seed": 42,
+  "training_time_sec": 0.0202,
+  "inference_time_sec": 0.0018,
+  "metrics": {
+    "accuracy": 0.95845,
+    "balanced_accuracy": 0.86558,
+    "precision": 0.78626,
+    "recall": 0.75182,
+    "f1": 0.76866,
+    "roc_auc": 0.98209,
+    "pr_auc": 0.8815,
+    "log_loss": 0.09379,
+    "brier_score": 0.02839,
+    "ece": 0.01006
+  },
+  "timestamp": "2026-10-07T19:34:10.290661"
+}

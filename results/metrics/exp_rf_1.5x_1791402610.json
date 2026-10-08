@@ -1,0 +1,37 @@
+{
+  "experiment_id": "exp_rf_1.5x_1791402610",
+  "model_name": "Random Forest",
+  "task_type": "threshold_classification",
+  "threshold": "1.5x",
+  "dataset_version": "dataset_v001",
+  "feature_version": "features_v001",
+  "train_range": {
+    "samples": 6965
+  },
+  "validation_range": {
+    "samples": 1492
+  },
+  "test_range": null,
+  "hyperparameters": {
+    "n_estimators": 200,
+    "max_depth": 6,
+    "min_samples_leaf": 20,
+    "n_jobs": -1
+  },
+  "random_seed": 42,
+  "training_time_sec": 0.5112,
+  "inference_time_sec": 0.038,
+  "metrics": {
+    "accuracy": 0.68029,
+    "balanced_accuracy": 0.57541,
+    "precision": 0.66667,
+    "recall": 0.98294,
+    "f1": 0.79449,
+    "roc_auc": 0.76628,
+    "pr_auc": 0.86317,
+    "log_loss": 0.56228,
+    "brier_score": 0.19254,
+    "ece": 0.07145
+  },
+  "timestamp": "2026-10-07T19:50:10.747916+00:00"
+}

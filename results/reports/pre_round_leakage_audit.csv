@@ -1,0 +1,6 @@
+dataset,platform,rounds_analyzed,post_interval_auc,post_interval_log_r,post_interval_p,pre_interval_auc,pre_interval_log_r,pre_interval_p
+Betika (Primary),Betika,100868,0.7791,0.027,1.000e-17,0.502,-0.0036,2.518e-01
+Odibets,Odibets,113979,0.814,0.0694,1.033e-121,0.5001,-0.0058,5.186e-02
+Winpesa,Winpesa,104323,0.7939,0.0303,1.239e-22,0.5002,0.0028,3.592e-01
+Betgr8,Betgr8,100692,0.7511,0.031,8.222e-23,0.4989,-0.0035,2.705e-01
+22bet (Baseline Study),22bet,15962,0.9268,0.1301,3.114e-61,0.5223,0.0017,8.329e-01

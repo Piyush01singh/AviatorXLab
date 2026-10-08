@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aviator Telemetry Bridge — Local Gateway</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    body {
+      background: #090d16;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      margin: 0;
+      padding: 1rem;
+      min-height: 100vh;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    .bridge-card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .bridge-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .bridge-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .status-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .status-badge.connected {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .status-badge.waiting {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .status-badge.error {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .metric-box {
+      background: #131d35;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+    .metric-label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-bottom: 0.25rem;
+    }
+    .metric-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #38bdf8;
+      font-family: monospace;
+    }
+    .bridge-instructions {
+      background: rgba(30, 41, 59, 0.5);
+      border-left: 3px solid #38bdf8;
+      padding: 0.6rem 0.8rem;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      margin-bottom: 1rem;
+      border-radius: 0 6px 6px 0;
+    }
+    .bridge-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .btn-action {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.5rem 0.8rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-action:hover {
+      background: #1d4ed8;
+    }
+    .btn-secondary {
+      background: #1e293b;
+      color: #94a3b8;
+    }
+    .btn-secondary:hover {
+      background: #334155;
+      color: #f8fafc;
+    }
+    .log-container {
+      flex: 1;
+      background: #060911;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 0.75rem;
+      overflow-y: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      max-height: 180px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .log-line {
+      line-height: 1.4;
+      word-break: break-all;
+    }
+    .log-line.success { color: #10b981; }
+    .log-line.info { color: #38bdf8; }
+    .log-line.warn { color: #f59e0b; }
+    .log-line.error { color: #ef4444; }
+  </style>
+</head>
+<body>
+  <div class="bridge-card">
+    <div class="bridge-header">
+      <div class="bridge-title">
+        <span>🌉</span> Aviator Telemetry Bridge
+      </div>
+      <div id="backendStatusBadge" class="status-badge waiting">Connecting...</div>
+    </div>
+
+    <div class="bridge-instructions">
+      <strong>Role:</strong> Secure cross-origin relay between the Aviator game iframe (<code>aviator-next.spribegaming.com</code>) and your local ML dashboard (<code>127.0.0.1:8000</code>). Keep this companion tab open while playing or observing.
+    </div>
+
+    <div class="grid-2" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 0.75rem;">
+      <div class="metric-box">
+        <div class="metric-label">Observer Link</div>
+        <div id="observerLinkVal" class="metric-value" style="font-size: 0.95rem; color: #f59e0b;">Waiting...</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Sockets Detected</div>
+        <div id="socketsDetectedVal" class="metric-value" style="font-size: 1.15rem; color: #38bdf8;">0</div>
+      </div>
+    </div>
+    <div class="grid-2" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1rem;">
+      <div class="metric-box">
+        <div class="metric-label">Raw Game Frames</div>
+        <div id="gameFramesVal" class="metric-value" style="font-size: 1.15rem; color: #10b981;">0</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Total Frames Relayed</div>
+        <div id="framesRelayedVal" class="metric-value">0</div>
+      </div>
+    </div>
+
+    <div class="bridge-actions">
+      <button id="sendTestFrameBtn" class="btn-action">⚡ Send Test Frame (2.45x)</button>
+      <button id="pingBackendBtn" class="btn-action btn-secondary">📡 Ping Backend</button>
+      <button id="clearLogsBtn" class="btn-action btn-secondary">🧹 Clear Log</button>
+    </div>
+
+    <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.35rem; font-weight: 600;">LIVE RELAY CONSOLE:</div>
+    <div id="logConsole" class="log-container">
+      <div class="log-line info">[Bridge] Initializing Telemetry Bridge on http://127.0.0.1:8000...</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      let framesRelayed = 0;
+      let socketsDetectedCount = 0;
+      let rawGameFramesCount = 0;
+      let observerConnected = false;
+      let observerHost = "none";
+      let bridgeWs = null;
+      const bc = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("aviator_telemetry_bus") : null;
+
+      const logEl = document.getElementById("logConsole");
+      const backendBadge = document.getElementById("backendStatusBadge");
+      const obsLinkVal = document.getElementById("observerLinkVal");
+      const framesVal = document.getElementById("framesRelayedVal");
+      const socketsVal = document.getElementById("socketsDetectedVal");
+      const gameFramesVal = document.getElementById("gameFramesVal");
+      const sendTestBtn = document.getElementById("sendTestFrameBtn");
+      const pingBtn = document.getElementById("pingBackendBtn");
+      const clearBtn = document.getElementById("clearLogsBtn");
+
+      function addLog(text, level = "info") {
+        const line = document.createElement("div");
+        line.className = "log-line " + level;
+        const time = new Date().toLocaleTimeString();
+        line.textContent = "[" + time + "] " + text;
+        logEl.appendChild(line);
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+
+      // 1. Connect to backend over local WebSocket or same-origin fetch
+      function initBackendConnection() {
+        // Attempt WebSocket first
+        try {
+          const wsProto = location.protocol === "https:" ? "wss:" : "ws:";
+          const wsUrl = wsProto + "//" + location.host + "/api/live/bridge-ws";
+          bridgeWs = new WebSocket(wsUrl);
+
+          bridgeWs.onopen = function () {
+            backendBadge.className = "status-badge connected";
+            backendBadge.textContent = "Backend: Connected (WS)";
+            addLog("Connected to backend via WebSocket: " + wsUrl, "success");
+            // Register bridge
+            sendToBackend({
+              type: "bridge_connected",
+              bridge_type: "websocket",
+              timestamp: new Date().toISOString()
+            });
+          };
+
+          bridgeWs.onerror = function () {
+            // Fall back to HTTP
+            backendBadge.className = "status-badge connected";
+            backendBadge.textContent = "Backend: Connected (HTTP)";
+            addLog("WebSocket fallback to same-origin HTTP POST", "warn");
+          };
+
+          bridgeWs.onclose = function () {
+            backendBadge.className = "status-badge waiting";
+            backendBadge.textContent = "Backend: HTTP Mode";
+          };
+        } catch (e) {
+          backendBadge.className = "status-badge connected";
+          backendBadge.textContent = "Backend: Connected (HTTP)";
+        }
+
+        // Also send initial HTTP handshake
+        fetch("/api/live/ingest", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            raw_frame: JSON.stringify({
+              type: "bridge_connected",
+              bridge_type: "browser_bridge",
+              timestamp: new Date().toISOString()
+            })
+          })
+        }).then(function (res) {
+          if (res.ok) {
+            backendBadge.className = "status-badge connected";
+            backendBadge.textContent = "Backend: Connected";
+            addLog("Backend handshake confirmed via /api/live/ingest", "success");
+          }
+        }).catch(function (err) {
+          backendBadge.className = "status-badge error";
+          backendBadge.textContent = "Backend Offline";
+          addLog("Backend connection failed: " + err, "error");
+        });
+      }
+
+      // Send raw payload to backend
+      async function sendToBackend(payload) {
+        const rawString = typeof payload === "string" ? payload : JSON.stringify(payload);
+        
+        // Broadcast locally to other dashboard tabs
+        if (bc) {
+          try { bc.postMessage({ raw_frame: rawString }); } catch (e) {}
+        }
+
+        if (bridgeWs && bridgeWs.readyState === WebSocket.OPEN) {
+          try {
+            bridgeWs.send(JSON.stringify({ raw_frame: rawString }));
+            return true;
+          } catch (e) {}
+        }
+
+        try {
+          const res = await fetch("/api/live/ingest", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ raw_frame: rawString })
+          });
+          return res.ok;
+        } catch (err) {
+          addLog("Relay error: " + err.message, "error");
+          return false;
+        }
+      }
+
+      // 2. Handshake with opener (Aviator iframe)
+      function notifyOpener() {
+        try {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage({
+              type: "bridge_handshake_ack",
+              bridge_status: "ready",
+              timestamp: new Date().toISOString()
+            }, "*");
+          }
+        } catch (e) {}
+      }
+
+      // 3. Listen for postMessage from cross-origin Aviator iframe
+      window.addEventListener("message", async function (event) {
+        const data = event.data;
+        if (!data) return;
+
+        // Verify it's an Aviator telemetry frame
+        let isTelemetry = false;
+        let payload = null;
+
+        if (data.__aviator_telemetry) {
+          isTelemetry = true;
+          payload = data.raw_frame || data;
+          if (data.host) {
+            observerHost = data.host;
+          }
+        } else if (typeof data === "string" && (data.includes("crash") || data.includes("multiplier") || data.includes("round") || data.includes("socket_detected"))) {
+          isTelemetry = true;
+          payload = data;
+        } else if (typeof data === "object" && (data.type === "crash" || data.multiplier || data.round_id || data.type === "observer_installed" || data.type === "socket_detected" || data.type === "game_frame")) {
+          isTelemetry = true;
+          payload = JSON.stringify(data);
+        }
+
+        if (!isTelemetry) return;
+
+        // Classify telemetry frame
+        let isGameFrame = false;
+        let isSocketDetected = false;
+        let pObj = null;
+        try {
+          pObj = typeof payload === "string" ? JSON.parse(payload) : payload;
+        } catch (e) {}
+
+        if (pObj) {
+          if (pObj.type === "socket_detected") {
+            isSocketDetected = true;
+            socketsDetectedCount++;
+            if (socketsVal) socketsVal.textContent = socketsDetectedCount;
+            addLog("🔌 WebSocket detected: " + (pObj.url || "active") + " [" + (pObj.detection_source || "hook") + "]", "info");
+          } else if (pObj.type === "game_frame" || pObj.type === "crash" || pObj.multiplier !== undefined) {
+            isGameFrame = true;
+            rawGameFramesCount++;
+            if (gameFramesVal) gameFramesVal.textContent = rawGameFramesCount;
+          }
+          if (pObj.sockets_detected !== undefined && Number(pObj.sockets_detected) > socketsDetectedCount) {
+            socketsDetectedCount = Number(pObj.sockets_detected);
+            if (socketsVal) socketsVal.textContent = socketsDetectedCount;
+          }
+          if (pObj.raw_frames_captured !== undefined && Number(pObj.raw_frames_captured) > rawGameFramesCount) {
+            rawGameFramesCount = Number(pObj.raw_frames_captured);
+            if (gameFramesVal) gameFramesVal.textContent = rawGameFramesCount;
+          }
+        }
+
+        observerConnected = true;
+        obsLinkVal.textContent = "Connected (" + (observerHost !== "none" ? observerHost : "iframe") + ")";
+        obsLinkVal.style.color = "#10b981";
+
+        // Acknowledge back to sender
+        if (event.source) {
+          try {
+            event.source.postMessage({
+              type: "bridge_ack",
+              timestamp: new Date().toISOString()
+            }, "*");
+          } catch (e) {}
+        }
+
+        // Forward to backend
+        framesRelayed++;
+        framesVal.textContent = framesRelayed;
+
+        const snippet = typeof payload === "string" ? payload.slice(0, 100) : JSON.stringify(payload).slice(0, 100);
+        if (isGameFrame) {
+          addLog("🎮 Relayed GAME frame #" + rawGameFramesCount + ": " + snippet + "...", "success");
+        } else if (!isSocketDetected) {
+          addLog("Relayed frame #" + framesRelayed + ": " + snippet + "...", "info");
+        }
+
+        await sendToBackend(payload);
+      });
+
+      // 4. Heartbeat loop to keep bridge active
+      setInterval(function () {
+        notifyOpener();
+        sendToBackend({
+          type: "bridge_heartbeat",
+          relayed_count: framesRelayed,
+          sockets_detected: socketsDetectedCount,
+          raw_game_frames: rawGameFramesCount,
+          timestamp: new Date().toISOString()
+        });
+      }, 5000);
+
+      // 5. Test actions
+      sendTestBtn.addEventListener("click", async function () {
+        const testPayload = {
+          type: "crash",
+          round_id: Date.now(),
+          multiplier: 2.45,
+          via_bridge: true,
+          timestamp: new Date().toISOString()
+        };
+        addLog("⚡ Sending test frame: 2.45x (Round " + testPayload.round_id + ")", "warn");
+        framesRelayed++;
+        rawGameFramesCount++;
+        framesVal.textContent = framesRelayed;
+        if (gameFramesVal) gameFramesVal.textContent = rawGameFramesCount;
+        await sendToBackend(testPayload);
+        addLog("✅ Test frame delivered to backend /api/live/ingest", "success");
+      });
+
+      pingBtn.addEventListener("click", async function () {
+        addLog("📡 Pinging /api/live/state...", "info");
+        try {
+          const res = await fetch("/api/live/state");
+          const data = await res.json();
+          addLog("State: stage=" + data.current_stage + ", frames=" + data.observer_telemetry.frames_received + ", live=" + data.is_live, "success");
+        } catch (e) {
+          addLog("Ping error: " + e, "error");
+        }
+      });
+
+      clearBtn.addEventListener("click", function () {
+        logEl.innerHTML = "";
+      });
+
+      // Start
+      initBackendConnection();
+      notifyOpener();
+      addLog("Bridge listening for window.postMessage from Aviator iframe.", "info");
+    })();
+  </script>
+</body>
+</html>

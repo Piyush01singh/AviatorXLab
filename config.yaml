@@ -1,0 +1,114 @@
+# ==============================================================================
+# Aviator ML Research Configuration
+# ==============================================================================
+
+project:
+  name: "aviator-ml-research"
+  seed: 42
+  description: "Empirical machine learning research into crash game multiplier predictability"
+
+hardware:
+  device: "auto"  # "auto", "cuda", or "cpu"
+  num_workers: 0  # 0 for Windows stability with low RAM
+  pin_memory: false
+
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  external_dir: "data/external"
+  dataset_version: "dataset_v001"
+  default_file: "data/raw/synthetic_sample.csv"
+  split_ratios:
+    train: 0.70
+    validation: 0.15
+    test: 0.15
+  walk_forward:
+    initial_train_size: 50000
+    step_size: 5000
+
+targets:
+  thresholds: [1.5, 2.0, 3.0, 5.0, 10.0]
+  regression_target: "multiplier"
+
+features:
+  feature_version: "features_v001"
+  lag_rounds: [1, 2, 3, 4, 5, 10, 20, 50]
+  rolling_windows: [5, 10, 20, 50]
+  streak_thresholds:
+    low: 1.5
+    high: 5.0
+    below_2x: 2.0
+    above_5x: 5.0
+  count_filters:
+    - { threshold: 1.2, comparison: "below", window: 10, name: "number_below_1_2_last_10" }
+    - { threshold: 1.5, comparison: "below", window: 20, name: "number_below_1_5_last_20" }
+    - { threshold: 2.0, comparison: "above", window: 20, name: "number_above_2_last_20" }
+    - { threshold: 5.0, comparison: "above", window: 50, name: "number_above_5_last_50" }
+  include_temporal: true
+
+models:
+  baseline:
+    rolling_window: 50
+
+  logistic:
+    C: 1.0
+    penalty: "l2"
+    solver: "lbfgs"
+    max_iter: 1000
+    class_weight: null
+
+  random_forest:
+    n_estimators: 200
+    max_depth: 6
+    min_samples_leaf: 20
+    n_jobs: -1
+
+  xgboost:
+    n_estimators: 200
+    max_depth: 4
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+    early_stopping_rounds: 15
+    eval_metric: "logloss"
+
+  mlp:
+    hidden_dims: [64, 32]
+    dropout: 0.2
+    learning_rate: 0.001
+    batch_size: 64
+    epochs: 50
+    early_stopping_patience: 10
+
+  lstm:
+    sequence_length: 10
+    hidden_size: 64
+    num_layers: 1
+    dropout: 0.2
+    learning_rate: 0.001
+    batch_size: 64
+    epochs: 50
+    early_stopping_patience: 10
+
+  gru:
+    sequence_length: 10
+    hidden_size: 64
+    num_layers: 1
+    dropout: 0.2
+    learning_rate: 0.001
+    batch_size: 64
+    epochs: 50
+    early_stopping_patience: 10
+
+backtesting:
+  initial_bankroll: 1000.0
+  fixed_stake: 10.0
+  cash_out_targets: [1.5, 2.0, 3.0, 5.0]
+  decision_threshold_prob: 0.55
+
+paths:
+  models_dir: "models"
+  results_metrics_dir: "results/metrics"
+  results_predictions_dir: "results/predictions"
+  results_plots_dir: "results/plots"
+  results_reports_dir: "results/reports"

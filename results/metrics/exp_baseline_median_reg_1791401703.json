@@ -1,0 +1,26 @@
+{
+  "experiment_id": "exp_baseline_median_reg_1791401703",
+  "model_name": "Median Baseline (Reg)",
+  "task_type": "multiplier_regression",
+  "threshold": null,
+  "dataset_version": "dataset_v001",
+  "feature_version": "features_v001",
+  "train_range": {
+    "samples": 6965
+  },
+  "validation_range": {
+    "samples": 1492
+  },
+  "test_range": null,
+  "hyperparameters": {},
+  "random_seed": 42,
+  "training_time_sec": 0.001,
+  "inference_time_sec": 0.001,
+  "metrics": {
+    "mae": 4.86506,
+    "rmse": 30.43624,
+    "r2": -0.02014,
+    "median_ae": 0.77
+  },
+  "timestamp": "2026-10-07T19:35:03.441838"
+}
