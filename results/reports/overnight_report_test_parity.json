@@ -1,0 +1,723 @@
+{
+  "pipeline_tag": "test_parity",
+  "job_id": "retrain_test_parity",
+  "timestamp": "2026-10-13T17:41:35.992442+00:00",
+  "execution_duration_sec": 16.92,
+  "data_metadata": {
+    "total_rounds": 15953,
+    "dataset_sha256": "bd41198ccd5db672baa287ef72144a47d7bebb661a6083373ebc2e5ddc2bed79",
+    "manifest": {
+      "manifest_version": "v1.0.0",
+      "generated_at": "2026-10-13T17:41:19.393735+00:00",
+      "corpus_sha256": "bd41198ccd5db672baa287ef72144a47d7bebb661a6083373ebc2e5ddc2bed79",
+      "total_input_files": 17,
+      "files": [
+        {
+          "file_path": "data\\raw\\real_aviator_historical.csv",
+          "file_name": "real_aviator_historical.csv",
+          "sha256": "34bf3084fd877e89aa043ed15534c6dd1cec1f36c4653f41cab71e7387f3fad4",
+          "source": "approved_historical",
+          "total_rows": 15962,
+          "valid_rows": 15953,
+          "rejected_rows": 9,
+          "unique_rounds": 15953,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "2023-08-18T22:22:06",
+            "max": "2023-08-23T22:24:29"
+          }
+        },
+        {
+          "file_path": "data\\live\\sessions\\stake_session_1791723293_552aa9a0_frozen.jsonl",
+          "file_name": "stake_session_1791723293_552aa9a0_frozen.jsonl",
+          "sha256": "f52a8ac2a0201232560c059a1b7ce79ae31afdcc4d866df40ea99f2591ecc704",
+          "source": "validated_overnight_session",
+          "total_rows": 40,
+          "valid_rows": 0,
+          "rejected_rows": 40,
+          "unique_rounds": 0,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "N/A",
+            "max": "N/A"
+          }
+        },
+        {
+          "file_path": "data\\live\\sessions\\stake_session_1791723417_47bb4926_frozen.jsonl",
+          "file_name": "stake_session_1791723417_47bb4926_frozen.jsonl",
+          "sha256": "93d42228c85e9854be35015604a0d80b6e24713312ccf0c5e98efff0ef635d22",
+          "source": "validated_overnight_session",
+          "total_rows": 3,
+          "valid_rows": 0,
+          "rejected_rows": 3,
+          "unique_rounds": 0,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "N/A",
+            "max": "N/A"
+          }
+        },
+        {
+          "file_path": "data\\live\\sessions\\stake_session_1791723419_5fce15ff_frozen.jsonl",
+          "file_name": "stake_session_1791723419_5fce15ff_frozen.jsonl",
+          "sha256": "3b2f028982b0a63518e29c08ffec239bbac1587dc3c1b20137f8f33f185cc1f8",
+          "source": "validated_overnight_session",
+          "total_rows": 3,
+          "valid_rows": 0,
+          "rejected_rows": 3,
+          "unique_rounds": 0,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "N/A",
+            "max": "N/A"
+          }
+        },
+        {
+          "file_path": "data\\live\\sessions\\stake_session_1791723426_05a089e5_frozen.jsonl",
+          "file_name": "stake_session_1791723426_05a089e5_frozen.jsonl",
+          "sha256": "f52a8ac2a0201232560c059a1b7ce79ae31afdcc4d866df40ea99f2591ecc704",
+          "source": "validated_overnight_session",
+          "total_rows": 40,
+          "valid_rows": 0,
+          "rejected_rows": 40,
+          "unique_rounds": 0,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "N/A",
+            "max": "N/A"
+          }
+        },
+        {
+          "file_path": "data\\live\\sessions\\stake_session_1791723740_042e4fcd_frozen.jsonl",
+          "file_name": "stake_session_1791723740_042e4fcd_frozen.jsonl",
+          "sha256": "802a4e1a188ab20c44891fe9f71ae97c1114b1a58cadf590e52fbc7d5c9628f8",
+          "source": "validated_overnight_session",
+          "total_rows": 3,
+          "valid_rows": 0,
+          "rejected_rows": 3,
+          "unique_rounds": 0,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "N/A",
+            "max": "N/A"
+          }
+        },
+        {
+          "file_path": "data\\live\\sessions\\stake_session_1791723807_6107310c_frozen.jsonl",
+          "file_name": "stake_session_1791723807_6107310c_frozen.jsonl",
+          "sha256": "8d9f3f02a62b7af386a27c48667e729c335c34892f0ec247541745a4bba020ee",
+          "source": "validated_overnight_session",
+          "total_rows": 3,
+          "valid_rows": 0,
+          "rejected_rows": 3,
+          "unique_rounds": 0,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "N/A",
+            "max": "N/A"
+          }
+        },
+        {
+          "file_path": "data\\live\\sessions\\stake_session_1791723812_0d671977_frozen.jsonl",
+          "file_name": "stake_session_1791723812_0d671977_frozen.jsonl",
+          "sha256": "f52a8ac2a0201232560c059a1b7ce79ae31afdcc4d866df40ea99f2591ecc704",
+          "source": "validated_overnight_session",
+          "total_rows": 40,
+          "valid_rows": 0,
+          "rejected_rows": 40,
+          "unique_rounds": 0,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "N/A",
+            "max": "N/A"
+          }
+        },
+        {
+          "file_path": "data\\live\\sessions\\stake_session_1791910025_9c6fab79_frozen.jsonl",
+          "file_name": "stake_session_1791910025_9c6fab79_frozen.jsonl",
+          "sha256": "6ad7c908dd813c6f4d410cde88684ebafc9cc6e5ff20da75e28ba0ca878f4949",
+          "source": "validated_overnight_session",
+          "total_rows": 11,
+          "valid_rows": 0,
+          "rejected_rows": 11,
+          "unique_rounds": 0,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "N/A",
+            "max": "N/A"
+          }
+        },
+        {
+          "file_path": "data\\live\\sessions\\stake_session_1791911356_d9350c4c_frozen.jsonl",
+          "file_name": "stake_session_1791911356_d9350c4c_frozen.jsonl",
+          "sha256": "1bd59561749871fee8e0f5526c20a7a2eda2d7fe8434e1c93e6694175f32ccf2",
+          "source": "validated_overnight_session",
+          "total_rows": 3,
+          "valid_rows": 0,
+          "rejected_rows": 3,
+          "unique_rounds": 0,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "N/A",
+            "max": "N/A"
+          }
+        },
+        {
+          "file_path": "data\\live\\sessions\\stake_session_1791911404_e4d39fc1_frozen.jsonl",
+          "file_name": "stake_session_1791911404_e4d39fc1_frozen.jsonl",
+          "sha256": "7db6aaa725c0aba34f29e18ab07a0316a52210b358bdd413e54393c8de61cb65",
+          "source": "validated_overnight_session",
+          "total_rows": 3,
+          "valid_rows": 0,
+          "rejected_rows": 3,
+          "unique_rounds": 0,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "N/A",
+            "max": "N/A"
+          }
+        },
+        {
+          "file_path": "data\\live\\sessions\\stake_session_1791911409_fe94db6e_frozen.jsonl",
+          "file_name": "stake_session_1791911409_fe94db6e_frozen.jsonl",
+          "sha256": "216e9d4488ddd91f33c193b2e6d81620b17ab538b13399aaab2e7fbe94b17798",
+          "source": "validated_overnight_session",
+          "total_rows": 58,
+          "valid_rows": 0,
+          "rejected_rows": 58,
+          "unique_rounds": 0,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "N/A",
+            "max": "N/A"
+          }
+        },
+        {
+          "file_path": "data\\live\\sessions\\stake_session_1791913093_b928e589_frozen.jsonl",
+          "file_name": "stake_session_1791913093_b928e589_frozen.jsonl",
+          "sha256": "216e9d4488ddd91f33c193b2e6d81620b17ab538b13399aaab2e7fbe94b17798",
+          "source": "validated_overnight_session",
+          "total_rows": 58,
+          "valid_rows": 0,
+          "rejected_rows": 58,
+          "unique_rounds": 0,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "N/A",
+            "max": "N/A"
+          }
+        },
+        {
+          "file_path": "data\\live\\sessions\\stake_session_1791913242_667f30b2_frozen.jsonl",
+          "file_name": "stake_session_1791913242_667f30b2_frozen.jsonl",
+          "sha256": "c647dc76f741dd55123477655a4d21cbbccce4cf4f4bffc36f4e86bf6f8f3446",
+          "source": "validated_overnight_session",
+          "total_rows": 3,
+          "valid_rows": 0,
+          "rejected_rows": 3,
+          "unique_rounds": 0,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "N/A",
+            "max": "N/A"
+          }
+        },
+        {
+          "file_path": "data\\live\\sessions\\stake_session_1791913278_cecdd5df_frozen.jsonl",
+          "file_name": "stake_session_1791913278_cecdd5df_frozen.jsonl",
+          "sha256": "20cd7e64aa262f7d20619f0e5aa3f5e58a44b246e1d61128d242f104f2bf5e07",
+          "source": "validated_overnight_session",
+          "total_rows": 3,
+          "valid_rows": 0,
+          "rejected_rows": 3,
+          "unique_rounds": 0,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "N/A",
+            "max": "N/A"
+          }
+        },
+        {
+          "file_path": "data\\live\\sessions\\stake_session_1791913278_d5e11d48_frozen.jsonl",
+          "file_name": "stake_session_1791913278_d5e11d48_frozen.jsonl",
+          "sha256": "216e9d4488ddd91f33c193b2e6d81620b17ab538b13399aaab2e7fbe94b17798",
+          "source": "validated_overnight_session",
+          "total_rows": 58,
+          "valid_rows": 0,
+          "rejected_rows": 58,
+          "unique_rounds": 0,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "N/A",
+            "max": "N/A"
+          }
+        },
+        {
+          "file_path": "data\\live\\stake_collected_rounds.jsonl",
+          "file_name": "stake_collected_rounds.jsonl",
+          "sha256": "216e9d4488ddd91f33c193b2e6d81620b17ab538b13399aaab2e7fbe94b17798",
+          "source": "active_stake_collector",
+          "total_rows": 58,
+          "valid_rows": 0,
+          "rejected_rows": 58,
+          "unique_rounds": 0,
+          "duplicates_in_file": 0,
+          "date_range": {
+            "min": "N/A",
+            "max": "N/A"
+          }
+        }
+      ],
+      "summary": {
+        "total_raw_rows": 16349,
+        "total_valid_rows": 15953,
+        "total_rejected_rows": 396,
+        "conflicts_detected_count": 0,
+        "conflicts": [],
+        "duplicates_removed_count": 0,
+        "final_training_row_count": 15953,
+        "unique_round_ids": 15953,
+        "date_range": {
+          "start": "2023-08-18T22:22:06",
+          "end": "2023-08-23T22:24:29"
+        }
+      }
+    },
+    "summary": {
+      "total_raw_rows": 16349,
+      "total_valid_rows": 15953,
+      "total_rejected_rows": 396,
+      "conflicts_detected_count": 0,
+      "conflicts": [],
+      "duplicates_removed_count": 0,
+      "final_training_row_count": 15953,
+      "unique_round_ids": 15953,
+      "date_range": {
+        "start": "2023-08-18T22:22:06",
+        "end": "2023-08-23T22:24:29"
+      }
+    },
+    "files": [
+      {
+        "file_path": "data\\raw\\real_aviator_historical.csv",
+        "file_name": "real_aviator_historical.csv",
+        "sha256": "34bf3084fd877e89aa043ed15534c6dd1cec1f36c4653f41cab71e7387f3fad4",
+        "source": "approved_historical",
+        "total_rows": 15962,
+        "valid_rows": 15953,
+        "rejected_rows": 9,
+        "unique_rounds": 15953,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "2023-08-18T22:22:06",
+          "max": "2023-08-23T22:24:29"
+        }
+      },
+      {
+        "file_path": "data\\live\\sessions\\stake_session_1791723293_552aa9a0_frozen.jsonl",
+        "file_name": "stake_session_1791723293_552aa9a0_frozen.jsonl",
+        "sha256": "f52a8ac2a0201232560c059a1b7ce79ae31afdcc4d866df40ea99f2591ecc704",
+        "source": "validated_overnight_session",
+        "total_rows": 40,
+        "valid_rows": 0,
+        "rejected_rows": 40,
+        "unique_rounds": 0,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "N/A",
+          "max": "N/A"
+        }
+      },
+      {
+        "file_path": "data\\live\\sessions\\stake_session_1791723417_47bb4926_frozen.jsonl",
+        "file_name": "stake_session_1791723417_47bb4926_frozen.jsonl",
+        "sha256": "93d42228c85e9854be35015604a0d80b6e24713312ccf0c5e98efff0ef635d22",
+        "source": "validated_overnight_session",
+        "total_rows": 3,
+        "valid_rows": 0,
+        "rejected_rows": 3,
+        "unique_rounds": 0,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "N/A",
+          "max": "N/A"
+        }
+      },
+      {
+        "file_path": "data\\live\\sessions\\stake_session_1791723419_5fce15ff_frozen.jsonl",
+        "file_name": "stake_session_1791723419_5fce15ff_frozen.jsonl",
+        "sha256": "3b2f028982b0a63518e29c08ffec239bbac1587dc3c1b20137f8f33f185cc1f8",
+        "source": "validated_overnight_session",
+        "total_rows": 3,
+        "valid_rows": 0,
+        "rejected_rows": 3,
+        "unique_rounds": 0,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "N/A",
+          "max": "N/A"
+        }
+      },
+      {
+        "file_path": "data\\live\\sessions\\stake_session_1791723426_05a089e5_frozen.jsonl",
+        "file_name": "stake_session_1791723426_05a089e5_frozen.jsonl",
+        "sha256": "f52a8ac2a0201232560c059a1b7ce79ae31afdcc4d866df40ea99f2591ecc704",
+        "source": "validated_overnight_session",
+        "total_rows": 40,
+        "valid_rows": 0,
+        "rejected_rows": 40,
+        "unique_rounds": 0,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "N/A",
+          "max": "N/A"
+        }
+      },
+      {
+        "file_path": "data\\live\\sessions\\stake_session_1791723740_042e4fcd_frozen.jsonl",
+        "file_name": "stake_session_1791723740_042e4fcd_frozen.jsonl",
+        "sha256": "802a4e1a188ab20c44891fe9f71ae97c1114b1a58cadf590e52fbc7d5c9628f8",
+        "source": "validated_overnight_session",
+        "total_rows": 3,
+        "valid_rows": 0,
+        "rejected_rows": 3,
+        "unique_rounds": 0,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "N/A",
+          "max": "N/A"
+        }
+      },
+      {
+        "file_path": "data\\live\\sessions\\stake_session_1791723807_6107310c_frozen.jsonl",
+        "file_name": "stake_session_1791723807_6107310c_frozen.jsonl",
+        "sha256": "8d9f3f02a62b7af386a27c48667e729c335c34892f0ec247541745a4bba020ee",
+        "source": "validated_overnight_session",
+        "total_rows": 3,
+        "valid_rows": 0,
+        "rejected_rows": 3,
+        "unique_rounds": 0,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "N/A",
+          "max": "N/A"
+        }
+      },
+      {
+        "file_path": "data\\live\\sessions\\stake_session_1791723812_0d671977_frozen.jsonl",
+        "file_name": "stake_session_1791723812_0d671977_frozen.jsonl",
+        "sha256": "f52a8ac2a0201232560c059a1b7ce79ae31afdcc4d866df40ea99f2591ecc704",
+        "source": "validated_overnight_session",
+        "total_rows": 40,
+        "valid_rows": 0,
+        "rejected_rows": 40,
+        "unique_rounds": 0,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "N/A",
+          "max": "N/A"
+        }
+      },
+      {
+        "file_path": "data\\live\\sessions\\stake_session_1791910025_9c6fab79_frozen.jsonl",
+        "file_name": "stake_session_1791910025_9c6fab79_frozen.jsonl",
+        "sha256": "6ad7c908dd813c6f4d410cde88684ebafc9cc6e5ff20da75e28ba0ca878f4949",
+        "source": "validated_overnight_session",
+        "total_rows": 11,
+        "valid_rows": 0,
+        "rejected_rows": 11,
+        "unique_rounds": 0,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "N/A",
+          "max": "N/A"
+        }
+      },
+      {
+        "file_path": "data\\live\\sessions\\stake_session_1791911356_d9350c4c_frozen.jsonl",
+        "file_name": "stake_session_1791911356_d9350c4c_frozen.jsonl",
+        "sha256": "1bd59561749871fee8e0f5526c20a7a2eda2d7fe8434e1c93e6694175f32ccf2",
+        "source": "validated_overnight_session",
+        "total_rows": 3,
+        "valid_rows": 0,
+        "rejected_rows": 3,
+        "unique_rounds": 0,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "N/A",
+          "max": "N/A"
+        }
+      },
+      {
+        "file_path": "data\\live\\sessions\\stake_session_1791911404_e4d39fc1_frozen.jsonl",
+        "file_name": "stake_session_1791911404_e4d39fc1_frozen.jsonl",
+        "sha256": "7db6aaa725c0aba34f29e18ab07a0316a52210b358bdd413e54393c8de61cb65",
+        "source": "validated_overnight_session",
+        "total_rows": 3,
+        "valid_rows": 0,
+        "rejected_rows": 3,
+        "unique_rounds": 0,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "N/A",
+          "max": "N/A"
+        }
+      },
+      {
+        "file_path": "data\\live\\sessions\\stake_session_1791911409_fe94db6e_frozen.jsonl",
+        "file_name": "stake_session_1791911409_fe94db6e_frozen.jsonl",
+        "sha256": "216e9d4488ddd91f33c193b2e6d81620b17ab538b13399aaab2e7fbe94b17798",
+        "source": "validated_overnight_session",
+        "total_rows": 58,
+        "valid_rows": 0,
+        "rejected_rows": 58,
+        "unique_rounds": 0,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "N/A",
+          "max": "N/A"
+        }
+      },
+      {
+        "file_path": "data\\live\\sessions\\stake_session_1791913093_b928e589_frozen.jsonl",
+        "file_name": "stake_session_1791913093_b928e589_frozen.jsonl",
+        "sha256": "216e9d4488ddd91f33c193b2e6d81620b17ab538b13399aaab2e7fbe94b17798",
+        "source": "validated_overnight_session",
+        "total_rows": 58,
+        "valid_rows": 0,
+        "rejected_rows": 58,
+        "unique_rounds": 0,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "N/A",
+          "max": "N/A"
+        }
+      },
+      {
+        "file_path": "data\\live\\sessions\\stake_session_1791913242_667f30b2_frozen.jsonl",
+        "file_name": "stake_session_1791913242_667f30b2_frozen.jsonl",
+        "sha256": "c647dc76f741dd55123477655a4d21cbbccce4cf4f4bffc36f4e86bf6f8f3446",
+        "source": "validated_overnight_session",
+        "total_rows": 3,
+        "valid_rows": 0,
+        "rejected_rows": 3,
+        "unique_rounds": 0,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "N/A",
+          "max": "N/A"
+        }
+      },
+      {
+        "file_path": "data\\live\\sessions\\stake_session_1791913278_cecdd5df_frozen.jsonl",
+        "file_name": "stake_session_1791913278_cecdd5df_frozen.jsonl",
+        "sha256": "20cd7e64aa262f7d20619f0e5aa3f5e58a44b246e1d61128d242f104f2bf5e07",
+        "source": "validated_overnight_session",
+        "total_rows": 3,
+        "valid_rows": 0,
+        "rejected_rows": 3,
+        "unique_rounds": 0,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "N/A",
+          "max": "N/A"
+        }
+      },
+      {
+        "file_path": "data\\live\\sessions\\stake_session_1791913278_d5e11d48_frozen.jsonl",
+        "file_name": "stake_session_1791913278_d5e11d48_frozen.jsonl",
+        "sha256": "216e9d4488ddd91f33c193b2e6d81620b17ab538b13399aaab2e7fbe94b17798",
+        "source": "validated_overnight_session",
+        "total_rows": 58,
+        "valid_rows": 0,
+        "rejected_rows": 58,
+        "unique_rounds": 0,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "N/A",
+          "max": "N/A"
+        }
+      },
+      {
+        "file_path": "data\\live\\stake_collected_rounds.jsonl",
+        "file_name": "stake_collected_rounds.jsonl",
+        "sha256": "216e9d4488ddd91f33c193b2e6d81620b17ab538b13399aaab2e7fbe94b17798",
+        "source": "active_stake_collector",
+        "total_rows": 58,
+        "valid_rows": 0,
+        "rejected_rows": 58,
+        "unique_rounds": 0,
+        "duplicates_in_file": 0,
+        "date_range": {
+          "min": "N/A",
+          "max": "N/A"
+        }
+      }
+    ],
+    "cleaning_metadata": {
+      "initial_rows": 15953,
+      "final_rows": 15953,
+      "dropped_invalid_timestamps": 0,
+      "dropped_invalid_multipliers": 0,
+      "dropped_duplicate_records": 0,
+      "dropped_duplicate_rounds": 0
+    },
+    "quality_audit": {
+      "is_valid": true,
+      "rejected_records": 396
+    }
+  },
+  "splits": {
+    "train_samples": 9541,
+    "calibration_samples": 2385,
+    "validation_samples": 2385,
+    "untouched_test_samples": 1592
+  },
+  "models_retrained": [
+    "Logistic Regression",
+    "Random Forest",
+    "XGBoost",
+    "MLP",
+    "LSTM",
+    "GRU"
+  ],
+  "calibrator_methods": [
+    "platt",
+    "isotonic"
+  ],
+  "selection_result": {
+    "champion_name": "Historical Baseline",
+    "is_fallback": true,
+    "advantage_established": false,
+    "reason": "No ML candidate established a reliable out-of-sample advantage over Historical Baseline. Candidate paired loss difference not statistically significant (p=0.0081 >= alpha=0.0071, t=-2.406). Retaining Historical Baseline.",
+    "evaluations": {
+      "Historical Baseline": {
+        "brier_1.5x": 0.24161,
+        "log_loss_1.5x": 0.67813,
+        "brier_2.0x": 0.255,
+        "log_loss_2.0x": 0.70317,
+        "brier_3.0x": 0.21421,
+        "log_loss_3.0x": 0.62023,
+        "brier_5.0x": 0.15303,
+        "log_loss_5.0x": 0.48482,
+        "brier_10.0x": 0.0857,
+        "log_loss_10.0x": 0.31409,
+        "mean_brier": 0.18991,
+        "mean_log_loss": 0.56009
+      },
+      "Logistic Regression": {
+        "brier_1.5x": 0.2435,
+        "log_loss_1.5x": 0.68355,
+        "brier_2.0x": 0.25762,
+        "log_loss_2.0x": 0.70876,
+        "brier_3.0x": 0.2138,
+        "log_loss_3.0x": 0.61923,
+        "brier_5.0x": 0.15391,
+        "log_loss_5.0x": 0.48699,
+        "brier_10.0x": 0.08654,
+        "log_loss_10.0x": 0.31744,
+        "mean_brier": 0.19107,
+        "mean_log_loss": 0.5632
+      },
+      "Random Forest": {
+        "brier_1.5x": 0.24072,
+        "log_loss_1.5x": 0.67612,
+        "brier_2.0x": 0.25427,
+        "log_loss_2.0x": 0.70173,
+        "brier_3.0x": 0.21385,
+        "log_loss_3.0x": 0.6194,
+        "brier_5.0x": 0.15297,
+        "log_loss_5.0x": 0.48454,
+        "brier_10.0x": 0.0862,
+        "log_loss_10.0x": 0.31623,
+        "mean_brier": 0.1896,
+        "mean_log_loss": 0.5596
+      },
+      "XGBoost": {
+        "brier_1.5x": 0.24035,
+        "log_loss_1.5x": 0.67521,
+        "brier_2.0x": 0.25421,
+        "log_loss_2.0x": 0.7016,
+        "brier_3.0x": 0.21368,
+        "log_loss_3.0x": 0.61908,
+        "brier_5.0x": 0.15305,
+        "log_loss_5.0x": 0.48486,
+        "brier_10.0x": 0.08574,
+        "log_loss_10.0x": 0.31427,
+        "mean_brier": 0.18941,
+        "mean_log_loss": 0.559,
+        "paired_test_p_value": 0.00812,
+        "paired_test_t_stat": -2.4061,
+        "is_statistically_significant": false
+      },
+      "MLP": {
+        "brier_1.5x": 0.24169,
+        "log_loss_1.5x": 0.67919,
+        "brier_2.0x": 0.25408,
+        "log_loss_2.0x": 0.70134,
+        "brier_3.0x": 0.21237,
+        "log_loss_3.0x": 0.61618,
+        "brier_5.0x": 0.15341,
+        "log_loss_5.0x": 0.48599,
+        "brier_10.0x": 0.08678,
+        "log_loss_10.0x": 0.31917,
+        "mean_brier": 0.18967,
+        "mean_log_loss": 0.56037
+      },
+      "LSTM": {
+        "brier_1.5x": 0.24438,
+        "log_loss_1.5x": 0.68189,
+        "brier_2.0x": 0.25015,
+        "log_loss_2.0x": 0.69345,
+        "brier_3.0x": 0.24678,
+        "log_loss_3.0x": 0.6867,
+        "brier_5.0x": 0.24601,
+        "log_loss_5.0x": 0.68516,
+        "brier_10.0x": 0.25904,
+        "log_loss_10.0x": 0.71126,
+        "mean_brier": 0.24927,
+        "mean_log_loss": 0.69169
+      },
+      "GRU": {
+        "brier_1.5x": 0.24388,
+        "log_loss_1.5x": 0.68086,
+        "brier_2.0x": 0.24966,
+        "log_loss_2.0x": 0.69246,
+        "brier_3.0x": 0.24607,
+        "log_loss_3.0x": 0.68528,
+        "brier_5.0x": 0.24569,
+        "log_loss_5.0x": 0.68452,
+        "brier_10.0x": 0.25646,
+        "log_loss_10.0x": 0.70609,
+        "mean_brier": 0.24835,
+        "mean_log_loss": 0.68984
+      },
+      "Candidate Weighted Ensemble": {
+        "brier_1.5x": 0.23737,
+        "log_loss_1.5x": 0.66774,
+        "brier_2.0x": 0.25156,
+        "log_loss_2.0x": 0.69628,
+        "brier_3.0x": 0.23349,
+        "log_loss_3.0x": 0.66001,
+        "brier_5.0x": 0.20306,
+        "log_loss_5.0x": 0.5983,
+        "brier_10.0x": 0.17659,
+        "log_loss_10.0x": 0.5442,
+        "mean_brier": 0.22041,
+        "mean_log_loss": 0.63331
+      }
+    }
+  },
+  "promoted": false,
+  "promotion_status": "retained_incumbent",
+  "champion_model": "Historical Baseline",
+  "checkpoint_directory": "models\\checkpoints\\candidate_test_parity",
+  "candidate_ensemble_weights": {
+    "Logistic Regression": 0.2683,
+    "Random Forest": 0.0115,
+    "XGBoost": 0.0133,
+    "MLP": 0.0012,
+    "LSTM": 0.7058,
+    "GRU": 0.0
+  }
+}

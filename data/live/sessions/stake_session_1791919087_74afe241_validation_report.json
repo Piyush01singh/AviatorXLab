@@ -1,0 +1,17 @@
+{
+  "is_valid": true,
+  "status": "VALIDATED",
+  "total_records": 2,
+  "valid_records": 2,
+  "incomplete_records": 0,
+  "rejected_records": 0,
+  "duplicate_count": 0,
+  "missing_field_errors": 0,
+  "timing_errors": 0,
+  "dataset_sha256": "aaf74f9ebb091e2dc164794d11ff7420cc844efa585d0f15faca3e0baae0e07c",
+  "dataset_file_path": "data\\live\\sessions\\stake_session_1791919087_74afe241_frozen.jsonl",
+  "generated_at": "2026-10-13T19:18:27.036853+00:00",
+  "rejection_sample": [],
+  "finalization_reason": "Target completed-round limit reached (2/2)",
+  "session_id": "stake_session_1791919087_74afe241"
+}

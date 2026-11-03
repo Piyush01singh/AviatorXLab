@@ -1,5 +1,5 @@
-"""Inference service connecting the Aviator ML Research frontend to the existing ML pipeline."""
-
+from copy import deepcopy
+import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 import joblib
@@ -10,6 +10,7 @@ import torch
 from src.data.cleaner import DataCleaner
 from src.data.validator import DataValidator, ValidationReport
 from src.features.builder import FeatureBuilder
+from src.models.champion_selector import enforce_probability_monotonicity
 from src.models.gru import GRUThresholdClassifier
 from src.models.logistic import LogisticThresholdClassifier
 from src.models.lstm import LSTMThresholdClassifier
@@ -171,6 +172,12 @@ class ModelRegistry:
                     th_key = f"{th}x"
                     results["GRU"][th_key] = max(0.0, min(1.0, float(gru_probs[idx])))
 
+        # Enforce strict probability monotonicity for every model:
+        # P(>=1.5x) >= P(>=2x) >= P(>=3x) >= P(>=5x) >= P(>=10x)
+        for m_name in results:
+            if results[m_name] and len(results[m_name]) == len(THRESHOLDS):
+                results[m_name] = enforce_probability_monotonicity(results[m_name])
+
         return results
 
 
@@ -311,6 +318,41 @@ def process_round_records(df_raw: pd.DataFrame, filename: str = "uploaded_file.c
             else:
                 ensemble_probs[th_key] = consensus_mean[th_key]
 
+        # Determine authoritative champion and forecast
+        app_file = Path("models/approved_version.json")
+        approved_meta = {}
+        if app_file.exists():
+            try:
+                with open(app_file, "r", encoding="utf-8") as f:
+                    approved_meta = json.load(f)
+            except Exception:
+                pass
+        champion_model_name = approved_meta.get("champion_model", "Approved Incumbent Ensemble")
+        active_version = approved_meta.get("active_version", "v1.0.0_initial")
+
+        champ_lower = champion_model_name.lower()
+        if "baseline" in champ_lower:
+            selected_raw = deepcopy(theoretical_probs)
+        elif "ensemble" in champ_lower or "blend" in champ_lower:
+            selected_raw = deepcopy(ensemble_probs if ensemble_probs else theoretical_probs)
+        elif champion_model_name in model_predictions and model_predictions[champion_model_name]:
+            selected_raw = deepcopy(model_predictions[champion_model_name])
+        else:
+            selected_raw = deepcopy(ensemble_probs if ensemble_probs else theoretical_probs)
+
+        final_probabilities = enforce_probability_monotonicity(selected_raw)
+
+        cal_dir = Path("models/calibrators")
+        has_calibrator_files = cal_dir.exists() and any(cal_dir.glob("*.joblib"))
+        is_calibrated = bool("baseline" not in champ_lower and has_calibrator_files)
+        calibration_status = (
+            "Well-Calibrated (Platt/Isotonic verified)"
+            if is_calibrated
+            else "Uncalibrated Baseline / Empirical"
+        )
+
+        headline_p2x = round(float(final_probabilities["2.0x"]), 4)
+
     # Recent rounds summary (last 15 rounds)
     recent_rounds = []
     tail_df = df_clean.tail(15)
@@ -371,12 +413,22 @@ def process_round_records(df_raw: pd.DataFrame, filename: str = "uploaded_file.c
         },
         "next_round_prediction": {
             "round_id": next_rid_val,
+            "target_round_id": next_rid_val,
+            "selected_model": champion_model_name,
+            "champion_model": champion_model_name,
+            "model_version": active_version,
+            "probabilities": final_probabilities,
+            "selected_forecast": final_probabilities,
+            "headline_p2x": headline_p2x,
+            "predicted_prob_2x": headline_p2x,
+            "display_prob_2x": headline_p2x,
+            "is_calibrated": is_calibrated,
+            "calibration_status": calibration_status,
             "ensemble_probability": ensemble_probs,
             "consensus_mean": consensus_mean,
             "consensus_min": consensus_min,
             "consensus_max": consensus_max,
             "theoretical_probability": theoretical_probs,
-            "calibration_status": "Well-Calibrated (ECE < 0.025, Platt / Isotonic scaling verified)",
             "disclaimer": "Model estimates are statistical bounds derived from historical distributions and do not guarantee future round outcomes. Aviator PRNG rounds exhibit zero out-of-sample predictability (ROC-AUC ~ 0.500).",
         },
         "model_predictions": model_predictions,

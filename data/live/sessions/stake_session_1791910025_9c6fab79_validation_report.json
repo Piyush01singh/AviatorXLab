@@ -1,0 +1,134 @@
+{
+  "is_valid": false,
+  "status": "FAILED",
+  "total_records": 11,
+  "valid_records": 0,
+  "incomplete_records": 0,
+  "rejected_records": 11,
+  "duplicate_count": 0,
+  "missing_field_errors": 0,
+  "timing_errors": 0,
+  "dataset_sha256": "b437091ed3c71b83e00d960a6e343ce1a4176e3897a7969a2c14ae270a143be0",
+  "dataset_file_path": "data\\live\\sessions\\stake_session_1791910025_9c6fab79_frozen.jsonl",
+  "generated_at": "2026-10-13T17:24:58.435248+00:00",
+  "rejection_sample": [
+    {
+      "round_id": 8048658,
+      "reasons": [
+        "Model 'LSTM' monotonicity violation: P(3.0x)=0.479263037443161 > previous threshold=0.4682489037513733.",
+        "Model 'LSTM' monotonicity violation: P(5.0x)=0.5110206007957458 > previous threshold=0.479263037443161.",
+        "Model 'GRU' monotonicity violation: P(3.0x)=0.4807785153388977 > previous threshold=0.4542861878871918.",
+        "Model 'GRU' monotonicity violation: P(5.0x)=0.48195356130599976 > previous threshold=0.4807785153388977.",
+        "Model 'GRU' monotonicity violation: P(10.0x)=0.49743956327438354 > previous threshold=0.48195356130599976.",
+        "Missing mandatory pre_round_hash provenance: got ''.",
+        "Missing mandatory input_feature_hash provenance: got ''.",
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048659,
+      "reasons": [
+        "Model 'LSTM' monotonicity violation: P(5.0x)=0.49665698409080505 > previous threshold=0.4821168780326843.",
+        "Model 'GRU' monotonicity violation: P(3.0x)=0.4976368844509125 > previous threshold=0.46839094161987305.",
+        "Model 'GRU' monotonicity violation: P(5.0x)=0.515412449836731 > previous threshold=0.4976368844509125.",
+        "Model 'GRU' monotonicity violation: P(10.0x)=0.5222100615501404 > previous threshold=0.515412449836731.",
+        "Missing mandatory pre_round_hash provenance: got ''.",
+        "Missing mandatory input_feature_hash provenance: got ''.",
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048660,
+      "reasons": [
+        "Model 'LSTM' monotonicity violation: P(5.0x)=0.48639750480651855 > previous threshold=0.47726792097091675.",
+        "Model 'LSTM' monotonicity violation: P(10.0x)=0.48890405893325806 > previous threshold=0.48639750480651855.",
+        "Model 'GRU' monotonicity violation: P(3.0x)=0.4970550835132599 > previous threshold=0.4819549024105072.",
+        "Model 'GRU' monotonicity violation: P(5.0x)=0.5192962288856506 > previous threshold=0.4970550835132599.",
+        "Model 'GRU' monotonicity violation: P(10.0x)=0.5325523614883423 > previous threshold=0.5192962288856506.",
+        "Missing mandatory pre_round_hash provenance: got ''.",
+        "Missing mandatory input_feature_hash provenance: got ''.",
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048661,
+      "reasons": [
+        "Model 'LSTM' monotonicity violation: P(5.0x)=0.48781442642211914 > previous threshold=0.467746764421463.",
+        "Model 'LSTM' monotonicity violation: P(10.0x)=0.49201640486717224 > previous threshold=0.48781442642211914.",
+        "Model 'GRU' monotonicity violation: P(5.0x)=0.5016264915466309 > previous threshold=0.48013678193092346.",
+        "Model 'GRU' monotonicity violation: P(10.0x)=0.5398976802825928 > previous threshold=0.5016264915466309.",
+        "Missing mandatory pre_round_hash provenance: got ''.",
+        "Missing mandatory input_feature_hash provenance: got ''.",
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048662,
+      "reasons": [
+        "Model 'LSTM' monotonicity violation: P(5.0x)=0.4874066710472107 > previous threshold=0.45838600397109985.",
+        "Model 'LSTM' monotonicity violation: P(10.0x)=0.4942370355129242 > previous threshold=0.4874066710472107.",
+        "Model 'GRU' monotonicity violation: P(5.0x)=0.4784543514251709 > previous threshold=0.4611872136592865.",
+        "Model 'GRU' monotonicity violation: P(10.0x)=0.5305026769638062 > previous threshold=0.4784543514251709.",
+        "Missing mandatory pre_round_hash provenance: got ''.",
+        "Missing mandatory input_feature_hash provenance: got ''.",
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048663,
+      "reasons": [
+        "Model 'LSTM' monotonicity violation: P(5.0x)=0.4767012894153595 > previous threshold=0.4582773745059967.",
+        "Model 'LSTM' monotonicity violation: P(10.0x)=0.48384061455726624 > previous threshold=0.4767012894153595.",
+        "Model 'GRU' monotonicity violation: P(5.0x)=0.4712119698524475 > previous threshold=0.4584921896457672.",
+        "Missing mandatory pre_round_hash provenance: got ''.",
+        "Missing mandatory input_feature_hash provenance: got ''.",
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048664,
+      "reasons": [
+        "Model 'LSTM' monotonicity violation: P(5.0x)=0.4721951484680176 > previous threshold=0.4604252874851227.",
+        "Model 'LSTM' monotonicity violation: P(10.0x)=0.47926080226898193 > previous threshold=0.4721951484680176.",
+        "Model 'GRU' monotonicity violation: P(2.0x)=0.5194559693336487 > previous threshold=0.515160322189331.",
+        "Model 'GRU' monotonicity violation: P(5.0x)=0.49345454573631287 > previous threshold=0.4700433611869812.",
+        "Missing mandatory pre_round_hash provenance: got ''.",
+        "Missing mandatory input_feature_hash provenance: got ''.",
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048665,
+      "reasons": [
+        "Model 'LSTM' monotonicity violation: P(5.0x)=0.49023768305778503 > previous threshold=0.46868517994880676.",
+        "Model 'GRU' monotonicity violation: P(5.0x)=0.4799170196056366 > previous threshold=0.4565609097480774.",
+        "Model 'GRU' monotonicity violation: P(10.0x)=0.4888719320297241 > previous threshold=0.4799170196056366.",
+        "Missing mandatory pre_round_hash provenance: got ''.",
+        "Missing mandatory input_feature_hash provenance: got ''.",
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048666,
+      "reasons": [
+        "Model 'LSTM' monotonicity violation: P(5.0x)=0.49866676330566406 > previous threshold=0.46627023816108704.",
+        "Model 'GRU' monotonicity violation: P(5.0x)=0.48035040497779846 > previous threshold=0.44848448038101196.",
+        "Model 'GRU' monotonicity violation: P(10.0x)=0.5187966823577881 > previous threshold=0.48035040497779846.",
+        "Missing mandatory pre_round_hash provenance: got ''.",
+        "Missing mandatory input_feature_hash provenance: got ''.",
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048667,
+      "reasons": [
+        "Model 'LSTM' monotonicity violation: P(5.0x)=0.5031048655509949 > previous threshold=0.4683760106563568.",
+        "Model 'GRU' monotonicity violation: P(5.0x)=0.4776533842086792 > previous threshold=0.44189614057540894.",
+        "Model 'GRU' monotonicity violation: P(10.0x)=0.5200293660163879 > previous threshold=0.4776533842086792.",
+        "Missing mandatory pre_round_hash provenance: got ''.",
+        "Missing mandatory input_feature_hash provenance: got ''.",
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    }
+  ]
+}

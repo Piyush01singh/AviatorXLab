@@ -1,0 +1,156 @@
+{
+  "pipeline_tag": "20261011_121524",
+  "timestamp": "2026-10-11T12:15:48.828118+00:00",
+  "execution_duration_sec": 24.65,
+  "data_metadata": {
+    "total_rounds": 15962,
+    "new_stake_rounds_added": 25,
+    "dataset_sha256": "3a0abc74329984cd7a5578c3d2a8789bbc2a4b1f4b8298c66be955125485ae31",
+    "cleaning_metadata": {
+      "initial_rows": 15987,
+      "final_rows": 15962,
+      "dropped_invalid_timestamps": 25,
+      "dropped_invalid_multipliers": 0,
+      "dropped_duplicate_records": 0,
+      "dropped_duplicate_rounds": 0
+    }
+  },
+  "splits": {
+    "train_samples": 9547,
+    "calibration_samples": 2386,
+    "validation_samples": 2386,
+    "untouched_test_samples": 1593
+  },
+  "selection_result": {
+    "champion_name": "MLP",
+    "is_fallback": false,
+    "advantage_established": true,
+    "reason": "Established validated out-of-sample loss reduction over baseline: Brier=0.18872 vs 0.18989",
+    "evaluations": {
+      "Historical Baseline": {
+        "brier_1.5x": 0.24154,
+        "log_loss_1.5x": 0.678,
+        "brier_2.0x": 0.25505,
+        "log_loss_2.0x": 0.70328,
+        "brier_3.0x": 0.2142,
+        "log_loss_3.0x": 0.62021,
+        "brier_5.0x": 0.15298,
+        "log_loss_5.0x": 0.4847,
+        "brier_10.0x": 0.08566,
+        "log_loss_10.0x": 0.31397,
+        "mean_brier": 0.18989,
+        "mean_log_loss": 0.56003
+      },
+      "Logistic Regression": {
+        "brier_1.5x": 0.24358,
+        "log_loss_1.5x": 0.68381,
+        "brier_2.0x": 0.2577,
+        "log_loss_2.0x": 0.70892,
+        "brier_3.0x": 0.21385,
+        "log_loss_3.0x": 0.61935,
+        "brier_5.0x": 0.15391,
+        "log_loss_5.0x": 0.48708,
+        "brier_10.0x": 0.08645,
+        "log_loss_10.0x": 0.31729,
+        "mean_brier": 0.1911,
+        "mean_log_loss": 0.56329
+      },
+      "Random Forest": {
+        "brier_1.5x": 0.24064,
+        "log_loss_1.5x": 0.67592,
+        "brier_2.0x": 0.25478,
+        "log_loss_2.0x": 0.70274,
+        "brier_3.0x": 0.21438,
+        "log_loss_3.0x": 0.62059,
+        "brier_5.0x": 0.15276,
+        "log_loss_5.0x": 0.48397,
+        "brier_10.0x": 0.0861,
+        "log_loss_10.0x": 0.31595,
+        "mean_brier": 0.18973,
+        "mean_log_loss": 0.55983
+      },
+      "XGBoost": {
+        "brier_1.5x": 0.24098,
+        "log_loss_1.5x": 0.67672,
+        "brier_2.0x": 0.25483,
+        "log_loss_2.0x": 0.70284,
+        "brier_3.0x": 0.21402,
+        "log_loss_3.0x": 0.61981,
+        "brier_5.0x": 0.15296,
+        "log_loss_5.0x": 0.48463,
+        "brier_10.0x": 0.08564,
+        "log_loss_10.0x": 0.31385,
+        "mean_brier": 0.18969,
+        "mean_log_loss": 0.55957
+      },
+      "MLP": {
+        "brier_1.5x": 0.23975,
+        "log_loss_1.5x": 0.67427,
+        "brier_2.0x": 0.25249,
+        "log_loss_2.0x": 0.69816,
+        "brier_3.0x": 0.21166,
+        "log_loss_3.0x": 0.61464,
+        "brier_5.0x": 0.15318,
+        "log_loss_5.0x": 0.48537,
+        "brier_10.0x": 0.0865,
+        "log_loss_10.0x": 0.31798,
+        "mean_brier": 0.18872,
+        "mean_log_loss": 0.55808
+      },
+      "LSTM": {
+        "brier_1.5x": 0.24522,
+        "log_loss_1.5x": 0.68356,
+        "brier_2.0x": 0.24993,
+        "log_loss_2.0x": 0.69302,
+        "brier_3.0x": 0.24717,
+        "log_loss_3.0x": 0.68748,
+        "brier_5.0x": 0.25108,
+        "log_loss_5.0x": 0.69532,
+        "brier_10.0x": 0.25768,
+        "log_loss_10.0x": 0.70855,
+        "mean_brier": 0.25022,
+        "mean_log_loss": 0.69358
+      },
+      "GRU": {
+        "brier_1.5x": 0.24359,
+        "log_loss_1.5x": 0.68026,
+        "brier_2.0x": 0.25038,
+        "log_loss_2.0x": 0.69391,
+        "brier_3.0x": 0.2427,
+        "log_loss_3.0x": 0.67852,
+        "brier_5.0x": 0.243,
+        "log_loss_5.0x": 0.67912,
+        "brier_10.0x": 0.25712,
+        "log_loss_10.0x": 0.70742,
+        "mean_brier": 0.24736,
+        "mean_log_loss": 0.68785
+      },
+      "Candidate Weighted Ensemble": {
+        "brier_1.5x": 0.23555,
+        "log_loss_1.5x": 0.66402,
+        "brier_2.0x": 0.25137,
+        "log_loss_2.0x": 0.6959,
+        "brier_3.0x": 0.22497,
+        "log_loss_3.0x": 0.64271,
+        "brier_5.0x": 0.18155,
+        "log_loss_5.0x": 0.5529,
+        "brier_10.0x": 0.13531,
+        "log_loss_10.0x": 0.45417,
+        "mean_brier": 0.20575,
+        "mean_log_loss": 0.60194
+      }
+    }
+  },
+  "promoted": true,
+  "promotion_status": "promoted_candidate",
+  "champion_model": "MLP",
+  "checkpoint_directory": "models\\checkpoints\\candidate_20261011_121524",
+  "candidate_ensemble_weights": {
+    "Logistic Regression": 0.1092,
+    "Random Forest": 0.0346,
+    "XGBoost": 0.0275,
+    "MLP": 0.3111,
+    "LSTM": 0.4795,
+    "GRU": 0.038
+  }
+}

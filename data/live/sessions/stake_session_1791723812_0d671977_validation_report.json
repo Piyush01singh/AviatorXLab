@@ -1,0 +1,17 @@
+{
+  "is_valid": false,
+  "status": "FAILED",
+  "total_records": 40,
+  "valid_records": 0,
+  "incomplete_records": 40,
+  "rejected_records": 0,
+  "duplicate_count": 0,
+  "missing_field_errors": 40,
+  "timing_errors": 0,
+  "dataset_sha256": "205cfe8e92a6d04ed455413a5de69ca872b296320e0fcd0704a4d2669dd35e33",
+  "dataset_file_path": "data\\live\\sessions\\stake_session_1791723812_0d671977_frozen.jsonl",
+  "generated_at": "2026-10-11T13:03:32.509960+00:00",
+  "rejection_sample": [],
+  "finalization_reason": "User stopped session manually",
+  "session_id": "stake_session_1791723812_0d671977"
+}

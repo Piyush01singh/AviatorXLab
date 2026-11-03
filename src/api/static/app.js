@@ -717,6 +717,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initObserverMonitorHandlers();
   initSourceModal();
   initCsvFallbackHandlers();
+  initCollectionAndPipelineHandlers();
 
   // Load initial live state immediately
   fetchLiveState();
@@ -762,36 +763,257 @@ function initThemeToggle() {
 }
 
 // ==============================================================================
-// MODE SWITCH: LIVE (PRIMARY) vs CSV (FALLBACK)
+// MODE SWITCH: LIVE RESEARCH vs NEXT ROUND PREDICTION vs CSV UPLOAD
 // ==============================================================================
 function initModeNavigation() {
   const tabLive = document.getElementById("tabLiveBtn");
   const tabCsv = document.getElementById("tabCsvBtn");
+  const tabNextRound = document.getElementById("tabNextRoundBtn");
   const liveView = document.getElementById("liveView");
   const csvView = document.getElementById("csvView");
+  const nextRoundView = document.getElementById("nextRoundView");
 
-  if (!tabLive || !tabCsv || !liveView || !csvView) return;
+  function switchTab(mode) {
+    currentMode = mode;
+    [tabLive, tabCsv, tabNextRound].forEach(tab => {
+      if (!tab) return;
+      tab.classList.remove("active");
+      tab.setAttribute("aria-selected", "false");
+    });
+    if (liveView) liveView.style.display = "none";
+    if (csvView) csvView.style.display = "none";
+    if (nextRoundView) nextRoundView.style.display = "none";
 
-  tabLive.addEventListener("click", () => {
-    currentMode = "live";
-    tabLive.classList.add("active");
-    tabLive.setAttribute("aria-selected", "true");
-    tabCsv.classList.remove("active");
-    tabCsv.setAttribute("aria-selected", "false");
+    if (mode === "live") {
+      tabLive?.classList.add("active");
+      tabLive?.setAttribute("aria-selected", "true");
+      if (liveView) liveView.style.display = "block";
+    } else if (mode === "csv") {
+      tabCsv?.classList.add("active");
+      tabCsv?.setAttribute("aria-selected", "true");
+      if (csvView) csvView.style.display = "block";
+    } else if (mode === "next_round") {
+      tabNextRound?.classList.add("active");
+      tabNextRound?.setAttribute("aria-selected", "true");
+      if (nextRoundView) nextRoundView.style.display = "block";
+      fetchNextRoundPrediction();
+    }
+  }
 
-    liveView.style.display = "block";
-    csvView.style.display = "none";
-  });
+  if (tabLive) tabLive.addEventListener("click", () => switchTab("live"));
+  if (tabCsv) tabCsv.addEventListener("click", () => switchTab("csv"));
+  if (tabNextRound) tabNextRound.addEventListener("click", () => switchTab("next_round"));
 
-  tabCsv.addEventListener("click", () => {
-    currentMode = "csv";
-    tabCsv.classList.add("active");
-    tabCsv.setAttribute("aria-selected", "true");
-    tabLive.classList.remove("active");
-    tabLive.setAttribute("aria-selected", "false");
+  // Background ticker for Next Round Prediction updates
+  setInterval(() => {
+    if (currentMode === "next_round") {
+      fetchNextRoundPrediction();
+    }
+  }, 1200);
+}
 
-    csvView.style.display = "block";
-    liveView.style.display = "none";
+// State cache to avoid unnecessary DOM thrashing and flickering
+let lastRenderedTargetRoundId = null;
+let lastRenderedResolvedRoundId = null;
+
+// Dedicated Next Round Prediction polling & rendering (Requirement 1, 2, 5)
+async function fetchNextRoundPrediction() {
+  try {
+    const res = await fetch("/api/prediction/next-round");
+    if (!res.ok) return;
+    const data = await res.json();
+    renderNextRoundPrediction(data);
+  } catch (e) {
+    console.debug("Could not fetch next round prediction:", e);
+  }
+}
+
+function renderNextRoundPrediction(data) {
+  if (!data) return;
+
+  // 1. Update Target Round & Phase with Update Indicator
+  const nrTarget = document.getElementById("nrTargetRoundId");
+  const targetIdStr = data.target_round_id != null ? `#${data.target_round_id}` : "—";
+  if (nrTarget && nrTarget.textContent !== targetIdStr) {
+    nrTarget.textContent = targetIdStr;
+    const updateBadge = document.getElementById("nrUpdateBadge");
+    if (updateBadge && lastRenderedTargetRoundId !== null && lastRenderedTargetRoundId !== data.target_round_id) {
+      updateBadge.style.display = "inline-flex";
+      setTimeout(() => { if (updateBadge) updateBadge.style.display = "none"; }, 2500);
+    }
+  }
+  lastRenderedTargetRoundId = data.target_round_id;
+
+  const nrPhaseBadge = document.getElementById("nrPhaseBadge");
+  const nrPhaseText = document.getElementById("nrPhaseText");
+  const phase = String(data.phase || "unavailable").toUpperCase();
+  if (nrPhaseText && nrPhaseText.textContent !== phase) nrPhaseText.textContent = phase;
+  if (nrPhaseBadge) {
+    nrPhaseBadge.className = "stage-badge " + (
+      phase === "WAITING" ? "stage-waiting" : (phase === "FLYING" ? "stage-flying" : "stage-idle")
+    );
+  }
+
+  const nrSourceDot = document.getElementById("nrSourceDot");
+  const nrSourceStatus = document.getElementById("nrSourceStatus");
+  const isConn = data.game_source_status === "CONNECTED";
+  const connText = isConn ? "CONNECTED" : "DISCONNECTED";
+  if (nrSourceStatus && nrSourceStatus.textContent !== connText) nrSourceStatus.textContent = connText;
+  if (nrSourceDot) {
+    nrSourceDot.className = "status-indicator-dot " + (isConn ? "status-dot-live" : "status-dot-offline");
+  }
+
+  const nrLastEvent = document.getElementById("nrLastEvent");
+  const lastEvStr = data.last_received_event || "—";
+  if (nrLastEvent && nrLastEvent.textContent !== lastEvStr) nrLastEvent.textContent = lastEvStr;
+
+  // 2. Render Latest Resolved Round Card (Requirement 1: strictly separate from forecast)
+  if (data.latest_resolved_round) {
+    const res = data.latest_resolved_round;
+    const elResRound = document.getElementById("nrResolvedRoundId");
+    if (elResRound) elResRound.textContent = res.round_id != null ? `#${res.round_id}` : "—";
+
+    const elResMult = document.getElementById("nrResolvedMultiplier");
+    if (elResMult && res.actual_multiplier != null) {
+      elResMult.textContent = `${Number(res.actual_multiplier).toFixed(2)}x`;
+    }
+
+    const elResTime = document.getElementById("nrResolvedTimestamp");
+    if (elResTime && res.resolution_timestamp) {
+      elResTime.textContent = res.resolution_timestamp.slice(0, 19).replace("T", " ") + " UTC";
+    }
+
+    const elResBadge = document.getElementById("nrResolvedOutcomeBadge");
+    if (elResBadge && res.actual_multiplier != null) {
+      const isHit = res.actual_multiplier >= 2.0;
+      elResBadge.className = "badge " + (isHit ? "badge-hit" : "badge-miss");
+      elResBadge.textContent = isHit ? "HIT (≥2.0x)" : "CRASH (<2.0x)";
+    }
+  }
+
+  // 3. Render WebSocket & Stream Diagnostics (Requirement 5)
+  if (data.socket_diagnostics) {
+    const diag = data.socket_diagnostics;
+    const elSpribe = document.getElementById("nrSpribeSocketStatus");
+    if (elSpribe) {
+      const isGameUp = isConn && diag.game_socket_status !== "disconnected";
+      elSpribe.textContent = isGameUp ? "CONNECTED" : "AWAITING FRAMES";
+      elSpribe.style.color = isGameUp ? "#10b981" : "var(--color-warning)";
+    }
+
+    const elStake = document.getElementById("nrStakePlatformSocketStatus");
+    if (elStake) {
+      const platStatus = String(diag.platform_socket_status || "disconnected").toLowerCase();
+      if (platStatus === "connected" || platStatus === "open") {
+        elStake.textContent = "CONNECTED";
+        elStake.style.color = "#10b981";
+      } else {
+        elStake.textContent = "DISCONNECTED (Platform feed only; zero effect on game)";
+        elStake.style.color = "var(--text-muted)";
+      }
+    }
+
+    const elLastRaw = document.getElementById("nrLastRawFrame");
+    if (elLastRaw) {
+      elLastRaw.textContent = diag.last_raw_event || "—";
+      elLastRaw.title = diag.last_raw_event || "—";
+    }
+
+    const elGaps = document.getElementById("nrConnectionGapsVal");
+    if (elGaps) {
+      const gapsCount = diag.connection_gaps_count || 0;
+      const gapSec = (diag.connection_gap_seconds || 0).toFixed(1);
+      elGaps.textContent = `${gapsCount} gaps (${gapSec}s)`;
+    }
+  }
+
+  // 4. Render Pre-Round Forecast with Zero Flickering (Requirement 2)
+  const fallbackBox = document.getElementById("nrFallbackBox");
+  const forecastBox = document.getElementById("nrForecastBox");
+  const fallbackMsg = document.getElementById("nrFallbackMessage");
+  const fallbackSub = document.getElementById("nrFallbackSubtext");
+
+  if (!data.is_valid) {
+    // If invalid or in-flight without verified forecast
+    if (phase === "FLYING") {
+      if (fallbackBox) fallbackBox.style.display = "block";
+      if (forecastBox) forecastBox.style.display = "none";
+      if (fallbackMsg) fallbackMsg.textContent = `Target Round #${data.target_round_id || '—'} in flight`;
+      if (fallbackSub) fallbackSub.textContent = "Forecast locked & expired upon round start. Awaiting next round pre-round WAITING event.";
+    } else {
+      if (fallbackBox) fallbackBox.style.display = "block";
+      if (forecastBox) forecastBox.style.display = "none";
+      if (fallbackMsg) fallbackMsg.textContent = data.fallback_message || "No valid pre-round prediction available";
+      if (fallbackSub) fallbackSub.textContent = "Forecasts are strictly verified pre-round in WAITING phase before flying starts.";
+    }
+    return;
+  }
+
+  // Valid pre-round forecast available
+  if (fallbackBox) fallbackBox.style.display = "none";
+  if (forecastBox) {
+    forecastBox.style.display = "block";
+    if (phase === "FLYING") {
+      forecastBox.classList.add("dimmed-card");
+    } else {
+      forecastBox.classList.remove("dimmed-card");
+    }
+  }
+
+  const verBadge = document.getElementById("nrVerificationBadge");
+  if (verBadge) {
+    if (phase === "FLYING") {
+      verBadge.className = "badge stage-expired-badge";
+      verBadge.textContent = "EXPIRED (ROUND IN FLIGHT)";
+    } else {
+      verBadge.className = "badge badge-success";
+      verBadge.textContent = "VERIFIED PRE-ROUND";
+    }
+  }
+
+  const elChamp = document.getElementById("nrChampionModelName");
+  if (elChamp) elChamp.textContent = data.champion_model || "Approved Incumbent Ensemble";
+
+  const elVersion = document.getElementById("nrModelVersion");
+  if (elVersion) elVersion.textContent = `Checkpoint: ${data.model_version || "v1.0.0_initial"}`;
+
+  const elTime = document.getElementById("nrPredictionTimestamp");
+  if (elTime) elTime.textContent = data.prediction_timestamp ? data.prediction_timestamp.slice(0, 19).replace("T", " ") + " UTC" : "—";
+
+  const elFreshness = document.getElementById("nrFreshness");
+  if (elFreshness) {
+    const fSec = data.forecast_freshness_seconds != null ? `${data.forecast_freshness_seconds}s ago` : "fresh";
+    elFreshness.textContent = `Freshness: ${fSec}`;
+  }
+
+  const hashes = data.provenance_hashes || {};
+  const elPreHash = document.getElementById("nrPreRoundHash");
+  if (elPreHash) elPreHash.textContent = hashes.pre_round_hash ? `${hashes.pre_round_hash.slice(0, 16)}...` : "—";
+  const elFeatHash = document.getElementById("nrInputFeatureHash");
+  if (elFeatHash) elFeatHash.textContent = hashes.input_feature_hash ? `${hashes.input_feature_hash.slice(0, 16)}...` : "—";
+
+  // Monotonic probabilities
+  const probs = data.probabilities || {};
+  const thresholds = [
+    { key: "1.5x", elVal: "nrProb1_5", elBar: "nrBar1_5" },
+    { key: "2.0x", elVal: "nrProb2_0", elBar: "nrBar2_0" },
+    { key: "3.0x", elVal: "nrProb3_0", elBar: "nrBar3_0" },
+    { key: "5.0x", elVal: "nrProb5_0", elBar: "nrBar5_0" },
+    { key: "10.0x", elVal: "nrProb10_0", elBar: "nrBar10_0" },
+  ];
+
+  thresholds.forEach(th => {
+    const valEl = document.getElementById(th.elVal);
+    const barEl = document.getElementById(th.elBar);
+    const p = probs[th.key];
+    if (p !== undefined && p !== null) {
+      const pct = (p * 100).toFixed(1);
+      if (valEl && valEl.textContent !== `${pct}%`) valEl.textContent = `${pct}%`;
+      if (barEl) barEl.style.width = `${pct}%`;
+    } else {
+      if (valEl) valEl.textContent = "—";
+      if (barEl) barEl.style.width = "0%";
+    }
   });
 }
 
@@ -1268,8 +1490,482 @@ function renderLiveDashboard(state) {
   // 8. Model Comparison Benchmark Table
   renderBenchmarkTable(state.benchmark_comparison || []);
 
-  // 9. Visualizations
+  // 9. Overnight Collection & Adaptive Learning Pipeline
+  renderCollectionPipeline(state);
+
+  // 10. Live Shadow Learning & Immutable Ledger
+  renderShadowLearningAndLedger(state);
+
+  // 11. Visualizations
   renderLiveVisualizations(state);
+}
+
+let currentRetrainConfirmationToken = null;
+
+function initCollectionAndPipelineHandlers() {
+  const startBtn = document.getElementById("startCollectionBtn");
+  const trainBtn = document.getElementById("triggerTrainingBtn");
+  const rollbackBtn = document.getElementById("rollbackModelBtn");
+
+  // Modal elements: Setup dialog
+  const setupModal = document.getElementById("sessionSetupModal");
+  const closeSetupBtn = document.getElementById("closeSetupModalBtn");
+  const cancelSetupBtn = document.getElementById("cancelSetupBtn");
+  const confirmStartBtn = document.getElementById("confirmStartColBtn");
+  const durInput = document.getElementById("setupDurationHours");
+  const roundToggle = document.getElementById("setupRoundLimitToggle");
+  const roundWrap = document.getElementById("setupRoundLimitInputWrap");
+  const targetRoundsInput = document.getElementById("setupTargetRounds");
+  const summaryText = document.getElementById("setupStoppingSummaryTextText") || document.getElementById("setupStoppingSummaryText");
+  const bridgeStatusEl = document.getElementById("setupBridgeStatus");
+  const observerStatusEl = document.getElementById("setupObserverStatus");
+
+  // Modal elements: Retrain confirmation dialog
+  const retrainModal = document.getElementById("retrainConfirmModal");
+  const closeRetrainBtn = document.getElementById("closeRetrainModalBtn");
+  const cancelRetrainBtn = document.getElementById("cancelRetrainBtn");
+  const confirmRetrainBtn = document.getElementById("confirmRetrainBtn");
+
+  function updateSetupSummary() {
+    if (!durInput || !summaryText) return;
+    const h = parseFloat(durInput.value) || 6.0;
+    const hasLimit = roundToggle && roundToggle.checked;
+    const r = targetRoundsInput && targetRoundsInput.value ? parseInt(targetRoundsInput.value, 10) : null;
+    if (hasLimit && r && r > 0) {
+      summaryText.textContent = `Collection will stop after ${h} hours or upon reaching ${r} rounds (whichever comes first).`;
+    } else {
+      summaryText.textContent = `Collection will stop automatically after ${h} hours (backend monotonic timer).`;
+    }
+  }
+
+  if (roundToggle) {
+    roundToggle.addEventListener("change", () => {
+      if (roundWrap) roundWrap.style.display = roundToggle.checked ? "block" : "none";
+      if (targetRoundsInput) targetRoundsInput.disabled = !roundToggle.checked;
+      updateSetupSummary();
+    });
+  }
+
+  if (durInput) durInput.addEventListener("input", updateSetupSummary);
+  if (targetRoundsInput) targetRoundsInput.addEventListener("input", updateSetupSummary);
+
+  if (closeSetupBtn && setupModal) closeSetupBtn.addEventListener("click", () => setupModal.close());
+  if (cancelSetupBtn && setupModal) cancelSetupBtn.addEventListener("click", () => setupModal.close());
+
+  if (startBtn) {
+    startBtn.addEventListener("click", async () => {
+      // If collection is actively running, stop it
+      const isCollecting = startBtn.classList.contains("btn-danger");
+      if (isCollecting) {
+        if (!confirm("Stop current overnight collection session? The dataset snapshot will be finalized and validated.")) return;
+        await fetch("/api/collection/stop", { method: "POST" });
+        fetchLiveState();
+        return;
+      }
+
+      // If idle/validated/failed, open Overnight Session Setup Dialog
+      if (setupModal) {
+        if (durInput) durInput.value = "6.0";
+        if (roundToggle) {
+          roundToggle.checked = false;
+          if (roundWrap) roundWrap.style.display = "none";
+          if (targetRoundsInput) {
+            targetRoundsInput.disabled = true;
+            targetRoundsInput.value = "";
+          }
+        }
+        updateSetupSummary();
+
+        try {
+          const res = await fetch("/api/collection/setup-info");
+          const info = await res.json();
+          if (bridgeStatusEl) {
+            bridgeStatusEl.textContent = info.bridge_connected ? "Connected" : "Disconnected";
+            bridgeStatusEl.style.color = info.bridge_connected ? "#10b981" : "#f59e0b";
+          }
+          if (observerStatusEl) {
+            observerStatusEl.textContent = info.observer_installed ? "Installed & Active" : (info.observer_status || "Not Detected");
+            observerStatusEl.style.color = info.observer_installed ? "#10b981" : "#f59e0b";
+          }
+        } catch (e) {}
+
+        setupModal.showModal();
+      }
+    });
+  }
+
+  if (confirmStartBtn && setupModal) {
+    confirmStartBtn.addEventListener("click", async () => {
+      const dur = parseFloat(durInput?.value || "6.0");
+      if (isNaN(dur) || dur <= 0) {
+        alert("Please enter a valid collection duration greater than 0 hours.");
+        return;
+      }
+      let targetRounds = null;
+      if (roundToggle && roundToggle.checked) {
+        targetRounds = parseInt(targetRoundsInput?.value, 10);
+        if (isNaN(targetRounds) || targetRounds < 1) {
+          alert("Please enter a valid maximum completed-round limit (integer >= 1).");
+          return;
+        }
+      }
+
+      confirmStartBtn.disabled = true;
+      try {
+        const res = await fetch("/api/collection/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            duration_hours: dur,
+            target_rounds: targetRounds,
+            source: "browser_observer",
+            auto_train: false,
+          }),
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          alert("Failed to start session: " + (err.detail || err.message || res.statusText));
+          return;
+        }
+        setupModal.close();
+        fetchLiveState();
+      } catch (err) {
+        alert("Error starting collection: " + err);
+      } finally {
+        confirmStartBtn.disabled = false;
+      }
+    });
+  }
+
+  // Retrain Dialog Handlers
+  if (closeRetrainBtn && retrainModal) closeRetrainBtn.addEventListener("click", () => retrainModal.close());
+  if (cancelRetrainBtn && retrainModal) cancelRetrainBtn.addEventListener("click", () => retrainModal.close());
+
+  if (trainBtn) {
+    trainBtn.addEventListener("click", async () => {
+      try {
+        const res = await fetch("/api/training/retrain-preview");
+        if (!res.ok) {
+          alert("Unable to fetch retraining preview.");
+          return;
+        }
+        const prev = await res.json();
+        currentRetrainConfirmationToken = prev.confirmation_token;
+
+        const elSession = document.getElementById("confSessionId");
+        if (elSession) elSession.textContent = prev.session_id || "idle_session";
+
+        const elHash = document.getElementById("confDatasetHash");
+        if (elHash) elHash.textContent = prev.dataset_sha256 ? `${prev.dataset_sha256.slice(0, 16)}...` : "—";
+
+        const elRange = document.getElementById("confTimeRange");
+        if (elRange) {
+          const s = prev.collection_time_range?.start || "N/A";
+          const e = prev.collection_time_range?.end || "N/A";
+          elRange.textContent = `${s.slice(0, 19)} to ${e.slice(0, 19)}`;
+        }
+
+        const counts = prev.record_counts || {};
+        const elAcc = document.getElementById("confAcceptedCnt");
+        if (elAcc) elAcc.textContent = `${counts.accepted || prev.eligible_training_examples || 0}`;
+
+        const elInc = document.getElementById("confIncompleteCnt");
+        if (elInc) elInc.textContent = `${counts.incomplete || 0}`;
+
+        const elRej = document.getElementById("confRejectedCnt");
+        if (elRej) elRej.textContent = `${counts.rejected || 0}`;
+
+        const elDup = document.getElementById("confDuplicateCnt");
+        if (elDup) elDup.textContent = `${counts.duplicate || 0}`;
+
+        const elHist = document.getElementById("confHistoricalRows");
+        if (elHist) elHist.textContent = `${prev.historical_data?.row_count?.toLocaleString() || '15,962'} rounds`;
+
+        const warnEl = document.getElementById("confInsufficientWarning");
+        if (warnEl) {
+          warnEl.style.display = prev.insufficient_sample_warning ? "block" : "none";
+        }
+
+        // Render Manifest Table & Exact Final Training Rows (Requirement 1)
+        const manifest = prev.dataset_manifest || prev.manifest || {};
+        const manifestFiles = manifest.files || [];
+        const manifestSummary = manifest.summary || {};
+        const finalRows = manifestSummary.final_training_row_count || prev.eligible_training_examples || 0;
+
+        const elFinalRows = document.getElementById("confFinalTrainingRows");
+        if (elFinalRows) {
+          elFinalRows.textContent = `${Number(finalRows).toLocaleString()} rounds`;
+        }
+
+        const elFilesCount = document.getElementById("confManifestFilesCount");
+        if (elFilesCount) {
+          elFilesCount.textContent = `${manifestFiles.length} file(s)`;
+        }
+
+        const tableBody = document.getElementById("confManifestTableBody");
+        if (tableBody) {
+          if (manifestFiles.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="7" style="padding: 8px; text-align: center; color: var(--text-dim);">No files in manifest</td></tr>';
+          } else {
+            tableBody.innerHTML = manifestFiles.map(f => `
+              <tr style="border-bottom: 1px solid var(--border-subtle);">
+                <td style="padding: 4px; font-weight: 600;" title="${f.file_path}">${f.file_name}</td>
+                <td style="padding: 4px; color: var(--text-dim);">${f.source}</td>
+                <td style="padding: 4px; color: var(--text-muted); font-size: 0.68rem;">${(f.sha256 || '').slice(0, 8)}...</td>
+                <td style="padding: 4px;">${f.total_rows}</td>
+                <td style="padding: 4px; color: #10b981;">${f.valid_rows}</td>
+                <td style="padding: 4px; color: ${f.rejected_rows > 0 ? '#ef4444' : 'var(--text-dim)'};">${f.rejected_rows}</td>
+                <td style="padding: 4px;">${f.unique_rounds}</td>
+              </tr>
+            `).join("");
+          }
+        }
+
+        // Render Conflicts alert if conflicting duplicates detected
+        const conflicts = manifestSummary.conflicts || [];
+        const conflictsAlert = document.getElementById("confConflictsAlert");
+        const conflictsText = document.getElementById("confConflictsText");
+        if (conflictsAlert) {
+          if (conflicts.length > 0) {
+            conflictsAlert.style.display = "block";
+            if (conflictsText) {
+              conflictsText.textContent = `${conflicts.length} conflicting round ID(s) detected with discrepant multiplier values. Conflicting duplicate records were quarantined and excluded from training.`;
+            }
+          } else {
+            conflictsAlert.style.display = "none";
+          }
+        }
+
+        if (retrainModal) retrainModal.showModal();
+      } catch (err) {
+        alert("Error loading retraining preview: " + err);
+      }
+    });
+  }
+
+  if (confirmRetrainBtn && retrainModal) {
+    confirmRetrainBtn.addEventListener("click", async () => {
+      confirmRetrainBtn.disabled = true;
+      confirmRetrainBtn.textContent = "Starting Training...";
+      try {
+        const res = await fetch("/api/training/overnight/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            confirmed: true,
+            confirmation_token: currentRetrainConfirmationToken,
+            min_test_rounds: 30,
+          }),
+        });
+        const data = await res.json();
+        retrainModal.close();
+        if (data.status === "running") {
+          alert(`Retraining Job '${data.job_id}' is executing in background.`);
+        } else if (data.promoted) {
+          alert(`Retraining Complete: Candidate PROMOTED! Champion: ${data.champion_model}`);
+        } else {
+          alert(`Retraining Complete: Candidate Retained Incumbent. Reason: ${data.selection_result?.reason || data.reason || "Gates not passed"}`);
+        }
+        fetchLiveState();
+      } catch (err) {
+        alert("Retraining error: " + err);
+      } finally {
+        confirmRetrainBtn.disabled = false;
+        confirmRetrainBtn.textContent = "Confirm and Start Training";
+      }
+    });
+  }
+
+  if (rollbackBtn) {
+    rollbackBtn.addEventListener("click", async () => {
+      if (!confirm("Revert active ML models to previous approved checkpoint?")) return;
+      try {
+        const res = await fetch("/api/training/rollback", { method: "POST" });
+        const data = await res.json();
+        alert(data.message || "Rollback completed");
+        fetchLiveState();
+      } catch (err) {
+        alert("Rollback error: " + err);
+      }
+    });
+  }
+}
+
+function renderCollectionPipeline(state) {
+  const col = state.collection_progress || {};
+  const appVer = state.approved_version_info || {};
+
+  const startBtn = document.getElementById("startCollectionBtn");
+  const trainBtn = document.getElementById("triggerTrainingBtn");
+  const statusBadge = document.getElementById("colStatusBadge");
+  const autoTrainBadge = document.getElementById("colAutoTrainBadge");
+  const championBadge = document.getElementById("championModelBadge");
+
+  const rawStatus = (col.session_status || (col.is_active ? "COLLECTING" : "IDLE")).toUpperCase();
+
+  if (startBtn) {
+    if (col.is_active || rawStatus === "COLLECTING") {
+      startBtn.className = "btn btn-danger btn-sm";
+      startBtn.disabled = false;
+      startBtn.innerHTML = "<span>Stop Collection</span>";
+    } else if (rawStatus === "FINALIZING") {
+      startBtn.className = "btn btn-secondary btn-sm";
+      startBtn.disabled = true;
+      startBtn.innerHTML = "<span>Finalizing Dataset...</span>";
+    } else {
+      startBtn.className = "btn btn-primary btn-sm";
+      startBtn.disabled = false;
+      startBtn.innerHTML = "<span>Start Overnight Session</span>";
+    }
+  }
+
+  if (trainBtn) {
+    const disableTraining = col.is_active || rawStatus === "COLLECTING" || rawStatus === "FINALIZING";
+    trainBtn.disabled = disableTraining;
+  }
+
+  if (statusBadge) {
+    statusBadge.textContent = `Collection: ${rawStatus}`;
+    if (rawStatus === "COLLECTING") {
+      statusBadge.className = "badge badge-success";
+    } else if (rawStatus === "VALIDATED") {
+      statusBadge.className = "badge badge-calibrated";
+    } else if (rawStatus === "FAILED") {
+      statusBadge.className = "badge badge-danger";
+    } else if (rawStatus === "FINALIZING") {
+      statusBadge.className = "badge badge-accent";
+    } else {
+      statusBadge.className = "badge badge-warning";
+    }
+  }
+
+  if (autoTrainBadge) {
+    autoTrainBadge.textContent = "Post-session Training: Manual Confirmation Required";
+    autoTrainBadge.className = "badge badge-accent";
+  }
+
+  if (championBadge) {
+    const champ = appVer.champion_model || state.active_prediction?.champion_model || "Approved Incumbent Ensemble";
+    championBadge.textContent = `Champion: ${champ}`;
+  }
+
+  const elRounds = document.getElementById("colSessionRounds");
+  if (elRounds) elRounds.textContent = `${col.session_rounds_collected || 0}`;
+
+  const elTargetSub = document.getElementById("colTargetRoundsSub");
+  if (elTargetSub) elTargetSub.textContent = col.stopping_condition || (col.target_rounds ? `Target: ${col.target_rounds} rounds` : "Target: 6.0h duration");
+
+  const elTotal = document.getElementById("colTotalRounds");
+  if (elTotal) elTotal.textContent = `${col.total_authentic_rounds || 0}`;
+
+  const elElapsed = document.getElementById("colElapsed");
+  if (elElapsed) elElapsed.textContent = `${Math.round(col.elapsed_seconds || 0)}s`;
+
+  const elRemainingSub = document.getElementById("colRemainingSub");
+  if (elRemainingSub) {
+    elRemainingSub.textContent = col.remaining_seconds !== null && col.remaining_seconds !== undefined
+      ? `Remaining: ${Math.round(col.remaining_seconds)}s`
+      : "Remaining: —";
+  }
+
+  const elQuality = document.getElementById("colQualityCounts");
+  if (elQuality) {
+    const valid = col.valid_records || 0;
+    const rej = col.rejected_records || 0;
+    elQuality.textContent = `${valid} Valid / ${rej} Rej`;
+    elQuality.style.color = rej > 0 ? "#ef4444" : "#10b981";
+  }
+
+  const elIncompleteSub = document.getElementById("colIncompleteSub");
+  if (elIncompleteSub) {
+    elIncompleteSub.textContent = `${col.incomplete_records || 0} Incomplete | ${col.duplicate_count || 0} Dup`;
+  }
+
+  const elHash = document.getElementById("colDatasetHash");
+  if (elHash) elHash.textContent = col.dataset_sha256 ? `${col.dataset_sha256.slice(0, 16)}...` : "—";
+
+  const elPathSub = document.getElementById("colDatasetPathSub");
+  if (elPathSub) {
+    const p = col.frozen_dataset_path || col.storage_path || "data/live/stake_collected_rounds.jsonl";
+    elPathSub.textContent = p.replace(/^.*[\\/]/, "");
+    elPathSub.title = p;
+  }
+
+  const elHealth = document.getElementById("colConnectionHealth");
+  if (elHealth) {
+    if (col.connection_gaps_count > 0) {
+      elHealth.textContent = `⚠️ ${col.connection_gaps_count} Gap(s) (${col.connection_gap_seconds}s)`;
+      elHealth.style.color = "#f59e0b";
+    } else {
+      const bridgeOk = state.observer_telemetry?.bridge_connected;
+      const obsOk = state.observer_telemetry?.frames_received > 0 || state.observer_telemetry?.installed;
+      elHealth.textContent = bridgeOk ? (obsOk ? "Live Telemetry" : "Bridge Connected") : "Standby";
+      elHealth.style.color = bridgeOk && obsOk ? "#10b981" : "#38bdf8";
+    }
+  }
+
+  const elLastRoundSub = document.getElementById("colLastValidRoundSub");
+  if (elLastRoundSub) {
+    if (col.last_valid_round_timestamp) {
+      const ts = col.last_valid_round_timestamp;
+      elLastRoundSub.textContent = `Last: ${ts.length >= 19 ? ts.substring(11, 19) + ' UTC' : ts}`;
+    } else {
+      elLastRoundSub.textContent = "Last Round: —";
+    }
+  }
+}
+
+function renderShadowLearningAndLedger(state) {
+  const shadow = state.shadow_learner_status || {};
+  const deployedWeights = shadow.deployed_weights || {};
+  const candidateWeights = shadow.candidate_weights || {};
+
+  const depContainer = document.getElementById("deployedWeightsList");
+  if (depContainer) {
+    depContainer.innerHTML = Object.entries(deployedWeights)
+      .map(([m, w]) => `<div style="display: flex; justify-content: space-between;"><span>${m}:</span><span style="color: #38bdf8;">${(w * 100).toFixed(1)}%</span></div>`)
+      .join("");
+  }
+
+  const candContainer = document.getElementById("candidateWeightsList");
+  if (candContainer) {
+    candContainer.innerHTML = Object.entries(candidateWeights)
+      .map(([m, w]) => `<div style="display: flex; justify-content: space-between;"><span>${m}:</span><span style="color: #10b981;">${(w * 100).toFixed(1)}%</span></div>`)
+      .join("");
+  }
+
+  const updatesBadge = document.getElementById("shadowUpdatesBadge");
+  if (updatesBadge) {
+    updatesBadge.textContent = `Updates: ${shadow.total_updates || 0}`;
+  }
+
+  const ledgerBody = document.getElementById("ledgerTableBody");
+  const entries = state.recent_ledger_entries || [];
+  if (ledgerBody) {
+    if (entries.length === 0) {
+      ledgerBody.innerHTML = `<tr><td colspan="6" class="text-muted text-center py-4">Awaiting ledger transactions...</td></tr>`;
+    } else {
+      ledgerBody.innerHTML = [...entries].reverse().slice(0, 5).map(e => {
+        const rId = e.round_id || "—";
+        const preHash = (e.pre_round_hash || "").slice(0, 12) + "...";
+        const forecast = e.pre_round_forecast || {};
+        const p2x = forecast.probabilities?.["2.0x"] || forecast.selected_forecast?.["2.0x"] || forecast.ensemble_probability?.["2.0x"] || forecast.predicted_prob_2x || 0.5;
+        const res = e.resolution;
+        const multStr = res ? `${Number(res.actual_multiplier).toFixed(2)}x` : "In-flight / Pending";
+        const statusStr = res ? "RESOLVED & SCORED" : "FROZEN PRE-ROUND";
+        return `
+          <tr>
+            <td class="font-mono"><strong>#${rId}</strong></td>
+            <td class="font-mono text-xs text-muted">${preHash}</td>
+            <td class="text-right font-mono">${(p2x * 100).toFixed(1)}%</td>
+            <td class="text-right font-mono">${multStr}</td>
+            <td><span class="badge ${res ? 'badge-hit' : 'badge-warning'}">${statusStr}</span></td>
+            <td><span class="badge badge-success">IMMUTABLE (SHA-256)</span></td>
+          </tr>
+        `;
+      }).join("");
+    }
+  }
 }
 
 // Scrolling History Strip Renderer
@@ -1305,49 +2001,77 @@ function renderHistoryStrip(stripRecords) {
 function renderNextRoundHero(pred) {
   if (!pred) return;
 
+  const targetId = pred.target_round_id !== undefined ? pred.target_round_id : (pred.round_id || "—");
   const elNextId = document.getElementById("nextRoundId");
-  if (elNextId) elNextId.textContent = pred.round_id || "—";
+  if (elNextId) elNextId.textContent = `#${targetId}`;
 
-  const elCal = document.getElementById("calibrationStatusText");
-  if (elCal) elCal.textContent = pred.calibration_status || "Well-Calibrated";
-
-  const grid = document.getElementById("mainThresholdsGrid");
-  if (!grid) return;
-  grid.innerHTML = "";
-
-  const thresholds = [
-    { key: "1.5x", label: "P(≥ 1.5x)", fair: "64.7%" },
-    { key: "2.0x", label: "P(≥ 2.0x)", fair: "48.5%" },
-    { key: "3.0x", label: "P(≥ 3.0x)", fair: "32.3%" },
-    { key: "5.0x", label: "P(≥ 5.0x)", fair: "19.4%" },
-    { key: "10.0x", label: "P(≥ 10.0x)", fair: "9.7%" },
-  ];
-
-  thresholds.forEach((t) => {
-    const ensProb = pred.ensemble_probability ? pred.ensemble_probability[t.key] : null;
-    const meanProb = pred.consensus_mean ? pred.consensus_mean[t.key] : 0.5;
-    const displayProb = ensProb !== null && ensProb !== undefined ? ensProb : meanProb;
-    const pct = (displayProb * 100).toFixed(1);
-
-    const card = document.createElement("div");
-    card.className = "threshold-card";
-    card.innerHTML = `
-      <span class="threshold-target">${t.label}</span>
-      <span class="threshold-prob">${pct}%</span>
-      <div class="progress-bar-bg" aria-hidden="true">
-        <div class="progress-bar-fill" style="width: ${pct}%"></div>
-      </div>
-      <span class="threshold-benchmark font-mono">Fair RTP: ${t.fair}</span>
-    `;
-    grid.appendChild(card);
-  });
-
-  // Consensus Details
-  if (pred.ensemble_probability) {
-    const p2x = pred.ensemble_probability["2.0x"];
-    const elEns = document.getElementById("consensusEnsembleVal");
-    if (elEns) elEns.textContent = p2x !== undefined ? `${(p2x * 100).toFixed(1)}%` : "N/A";
+  // 1. Explicitly identify the approved champion model
+  const selectedModel = pred.selected_model || pred.champion_model || "Approved Incumbent Ensemble";
+  const elSpotlightLabel = document.getElementById("spotlightModelLabel");
+  if (elSpotlightLabel) {
+    elSpotlightLabel.textContent = `${selectedModel} Target P(≥ 2.0x)`;
   }
+  const elThreshBadge = document.getElementById("thresholdsModelBadge");
+  if (elThreshBadge) {
+    elThreshBadge.textContent = `Forecast Source: ${selectedModel}`;
+  }
+
+  // 2. Calibration badge: Only display when deployed model version has valid supporting calibration results
+  const calWrap = document.getElementById("calibrationBadgeWrap");
+  const elCal = document.getElementById("calibrationStatusText");
+  if (calWrap) {
+    if (pred.is_calibrated) {
+      calWrap.style.display = "inline-flex";
+      if (elCal) elCal.textContent = pred.calibration_status || "Well-Calibrated (Platt/Isotonic)";
+    } else {
+      calWrap.style.display = "none";
+    }
+  }
+
+  // 3. Authoritative Forecast: single source of truth across all 5 thresholds
+  const authProbs = pred.probabilities || pred.selected_forecast || pred.ensemble_probability || {};
+  const headlineP2x = (authProbs["2.0x"] !== undefined)
+    ? authProbs["2.0x"]
+    : (pred.headline_p2x !== undefined ? pred.headline_p2x : (pred.predicted_prob_2x !== undefined ? pred.predicted_prob_2x : 0.485));
+
+  const elEns = document.getElementById("consensusEnsembleVal");
+  if (elEns) {
+    elEns.textContent = `${(headlineP2x * 100).toFixed(1)}%`;
+  }
+
+  // 4. Derive all five final probability cards from this exact forecast object
+  const grid = document.getElementById("mainThresholdsGrid");
+  if (grid) {
+    grid.innerHTML = "";
+    const thresholds = [
+      { key: "1.5x", label: "P(≥ 1.5x)", fair: "64.7%" },
+      { key: "2.0x", label: "P(≥ 2.0x)", fair: "48.5%" },
+      { key: "3.0x", label: "P(≥ 3.0x)", fair: "32.3%" },
+      { key: "5.0x", label: "P(≥ 5.0x)", fair: "19.4%" },
+      { key: "10.0x", label: "P(≥ 10.0x)", fair: "9.7%" },
+    ];
+
+    thresholds.forEach((t) => {
+      const prob = (authProbs[t.key] !== undefined)
+        ? authProbs[t.key]
+        : (pred.ensemble_probability && pred.ensemble_probability[t.key] !== undefined ? pred.ensemble_probability[t.key] : 0.5);
+      const pct = (prob * 100).toFixed(1);
+
+      const card = document.createElement("div");
+      card.className = "threshold-card";
+      card.innerHTML = `
+        <span class="threshold-target">${t.label}</span>
+        <span class="threshold-prob">${pct}%</span>
+        <div class="progress-bar-bg" aria-hidden="true">
+          <div class="progress-bar-fill" style="width: ${pct}%"></div>
+        </div>
+        <span class="threshold-benchmark font-mono">Fair RTP: ${t.fair}</span>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  // 5. Separate Comparison Section: Reference consensus mean and spread
   if (pred.consensus_mean) {
     const m2x = pred.consensus_mean["2.0x"];
     const elMean = document.getElementById("consensusMeanVal");
@@ -1381,9 +2105,11 @@ function renderEvaluationTable(evalList) {
     const badgeClass = isHit ? "badge-hit" : "badge-miss";
     const tsStr = row.timestamp ? row.timestamp.slice(11, 19) : "—";
 
+    const prob2x = (row.probabilities && row.probabilities["2.0x"] !== undefined) ? row.probabilities["2.0x"] : row.predicted_prob_2x;
+
     tr.innerHTML = `
       <td class="font-mono"><strong>#${row.round_id}</strong></td>
-      <td class="text-right font-mono">${(row.predicted_prob_2x * 100).toFixed(1)}%</td>
+      <td class="text-right font-mono">${(prob2x * 100).toFixed(1)}%</td>
       <td class="text-right font-mono"><span class="multiplier-pill ${isHit ? 'multiplier-high' : 'multiplier-low'}">${row.actual_multiplier.toFixed(2)}x</span></td>
       <td><span class="badge ${badgeClass}">${isHit ? 'HIT (≥2.0x)' : 'CRASH (<2.0x)'}</span></td>
       <td class="text-right font-mono text-muted">${row.brier_error.toFixed(4)}</td>

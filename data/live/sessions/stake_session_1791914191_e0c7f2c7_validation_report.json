@@ -1,0 +1,78 @@
+{
+  "is_valid": false,
+  "status": "FAILED",
+  "total_records": 11,
+  "valid_records": 0,
+  "incomplete_records": 0,
+  "rejected_records": 11,
+  "duplicate_count": 0,
+  "missing_field_errors": 0,
+  "timing_errors": 0,
+  "dataset_sha256": "dd309b8b886fa8a8749c192210e8c0d2c288a1f766accea373c18e0f40e3e2bd",
+  "dataset_file_path": "data\\live\\sessions\\stake_session_1791914191_e0c7f2c7_frozen.jsonl",
+  "generated_at": "2026-10-13T18:00:08.233171+00:00",
+  "rejection_sample": [
+    {
+      "round_id": 8048846,
+      "reasons": [
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048847,
+      "reasons": [
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048848,
+      "reasons": [
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048849,
+      "reasons": [
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048850,
+      "reasons": [
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048851,
+      "reasons": [
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048852,
+      "reasons": [
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048853,
+      "reasons": [
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048854,
+      "reasons": [
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    },
+    {
+      "round_id": 8048855,
+      "reasons": [
+        "Completed record missing mandatory resolution_hash provenance: got ''."
+      ]
+    }
+  ],
+  "finalization_reason": "Target collection duration reached (216.4s / 216.0s)",
+  "session_id": "stake_session_1791914191_e0c7f2c7"
+}

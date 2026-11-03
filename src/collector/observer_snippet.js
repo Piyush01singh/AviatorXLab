@@ -376,6 +376,10 @@
     var rState = -1;
     try { rState = ws.readyState; } catch (e) {}
 
+    var isSpribe = url.indexOf("spribegaming") !== -1 || url.indexOf("spribe") !== -1 || url.indexOf("aviator") !== -1;
+    var isStakePlatform = url.indexOf("stake.com") !== -1 || url.indexOf("/_api/websockets") !== -1;
+    var category = isSpribe ? "spribe_game" : (isStakePlatform ? "stake_platform" : "other");
+
     var alreadyKnown = false;
     for (var i = 0; i < discoveredSockets.length; i++) {
       if (discoveredSockets[i].url === url) {
@@ -387,13 +391,14 @@
       var socketRecord = {
         url: url,
         readyState: rState,
+        category: category,
         detectedVia: detectionSource,
         timestamp: new Date().toISOString()
       };
       discoveredSockets.push(socketRecord);
 
       console.log(
-        "%c[Aviator ML Observer]%c 🔌 Hooked active WebSocket (" + detectionSource + "): " + url + " (readyState: " + rState + ")",
+        "%c[Aviator ML Observer]%c 🔌 Hooked active WebSocket (" + detectionSource + ", " + category + "): " + url + " (readyState: " + rState + ")",
         "color: #10b981; font-weight: bold;",
         "color: inherit;"
       );
@@ -401,6 +406,7 @@
       postToBridge({
         type: "socket_detected",
         url: url,
+        category: category,
         ready_state: rState,
         detection_source: detectionSource,
         timestamp: new Date().toISOString()
@@ -414,6 +420,43 @@
         if (event.__aviator_handled) return;
         try { event.__aviator_handled = true; } catch (e) {}
         handleIncomingMessage(event.data, url);
+      });
+    } catch (e) {}
+
+    // Attach close and error listeners to monitor disconnects and distinguish game vs platform socket
+    try {
+      ws.addEventListener("close", function (event) {
+        for (var k = 0; k < discoveredSockets.length; k++) {
+          if (discoveredSockets[k].url === url) {
+            discoveredSockets[k].readyState = 3;
+            break;
+          }
+        }
+        postToBridge({
+          type: "socket_status_change",
+          status: "closed",
+          code: event ? event.code : 1000,
+          reason: event ? event.reason : "",
+          url: url,
+          category: category,
+          timestamp: new Date().toISOString()
+        });
+      });
+
+      ws.addEventListener("error", function () {
+        for (var k = 0; k < discoveredSockets.length; k++) {
+          if (discoveredSockets[k].url === url) {
+            discoveredSockets[k].readyState = 3;
+            break;
+          }
+        }
+        postToBridge({
+          type: "socket_status_change",
+          status: "error",
+          url: url,
+          category: category,
+          timestamp: new Date().toISOString()
+        });
       });
     } catch (e) {}
   }
@@ -590,16 +633,28 @@
   }
 
   function getAviatorDiagnostics() {
+    var spribeSockets = discoveredSockets.filter(function (s) {
+      return s.url.indexOf("spribegaming") !== -1 || s.url.indexOf("spribe") !== -1 || s.url.indexOf("aviator") !== -1;
+    });
+    var stakePlatformSockets = discoveredSockets.filter(function (s) {
+      return s.url.indexOf("stake.com") !== -1 || s.url.indexOf("/_api/websockets") !== -1;
+    });
+
     return {
       observerInstalled: true,
       host: hostName,
       context: isIframe ? "iframe" : "top",
       bridgeConnected: isBridgeConnected || Boolean(findExistingBridge()),
+      gameSocketStatus: spribeSockets.length > 0 ? (spribeSockets.some(function(s) { return s.readyState === 1; }) ? "connected" : "disconnected") : "not_detected",
+      gameSocketsCount: spribeSockets.length,
+      platformSocketStatus: stakePlatformSockets.length > 0 ? (stakePlatformSockets.some(function(s) { return s.readyState === 1; }) ? "connected" : "disconnected_or_error") : "not_detected",
+      platformSocketsCount: stakePlatformSockets.length,
       webSocketsDetectedCount: discoveredSockets.length,
       webSocketsDetected: discoveredSockets,
       rawFramesCapturedCount: rawFramesCapturedCount,
       framesSentToBridgeCount: framesSentCount,
-      lastRawFrameSnippet: lastRawFrameSnippet
+      lastRawFrameSnippet: lastRawFrameSnippet,
+      diagnosticNote: "wss://stake.com/_api/websockets belongs to Stake platform chat/presence. The Aviator telemetry stream comes from Spribe (*.spribegaming.com). Errors on Stake platform socket do NOT affect Aviator prediction telemetry."
     };
   }
 

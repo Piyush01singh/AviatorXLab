@@ -1,0 +1,118 @@
+{
+  "is_valid": false,
+  "status": "FAILED",
+  "total_records": 58,
+  "valid_records": 0,
+  "incomplete_records": 0,
+  "rejected_records": 58,
+  "duplicate_count": 0,
+  "missing_field_errors": 40,
+  "timing_errors": 0,
+  "dataset_sha256": "89377e32d5ad8f63d6738ad15d51c4c3bb7de5adfd49537d460265e712b37f01",
+  "dataset_file_path": "data\\live\\sessions\\stake_session_1791913093_b928e589_frozen.jsonl",
+  "generated_at": "2026-10-13T17:38:13.739352+00:00",
+  "rejection_sample": [
+    {
+      "round_id": 88001,
+      "reasons": [
+        "Missing pre-round 'model_predictions' container.",
+        "Missing final/champion probabilities dictionary.",
+        "Missing mandatory pre_round_hash provenance: got 'None'.",
+        "Missing mandatory input_feature_hash provenance: got 'None'.",
+        "Completed record missing mandatory resolution_hash provenance: got 'None'."
+      ]
+    },
+    {
+      "round_id": 99120,
+      "reasons": [
+        "Missing pre-round 'model_predictions' container.",
+        "Missing final/champion probabilities dictionary.",
+        "Missing mandatory pre_round_hash provenance: got 'None'.",
+        "Missing mandatory input_feature_hash provenance: got 'None'.",
+        "Completed record missing mandatory resolution_hash provenance: got 'None'."
+      ]
+    },
+    {
+      "round_id": 77055,
+      "reasons": [
+        "Missing pre-round 'model_predictions' container.",
+        "Missing final/champion probabilities dictionary.",
+        "Missing mandatory pre_round_hash provenance: got 'None'.",
+        "Missing mandatory input_feature_hash provenance: got 'None'.",
+        "Completed record missing mandatory resolution_hash provenance: got 'None'."
+      ]
+    },
+    {
+      "round_id": 105432,
+      "reasons": [
+        "Missing pre-round 'model_predictions' container.",
+        "Missing final/champion probabilities dictionary.",
+        "Missing mandatory pre_round_hash provenance: got 'None'.",
+        "Missing mandatory input_feature_hash provenance: got 'None'.",
+        "Completed record missing mandatory resolution_hash provenance: got 'None'."
+      ]
+    },
+    {
+      "round_id": 205881,
+      "reasons": [
+        "Missing pre-round 'model_predictions' container.",
+        "Missing final/champion probabilities dictionary.",
+        "Missing mandatory pre_round_hash provenance: got 'None'.",
+        "Missing mandatory input_feature_hash provenance: got 'None'.",
+        "Completed record missing mandatory resolution_hash provenance: got 'None'."
+      ]
+    },
+    {
+      "round_id": 889901,
+      "reasons": [
+        "Missing pre-round 'model_predictions' container.",
+        "Missing final/champion probabilities dictionary.",
+        "Missing mandatory pre_round_hash provenance: got 'None'.",
+        "Missing mandatory input_feature_hash provenance: got 'None'.",
+        "Completed record missing mandatory resolution_hash provenance: got 'None'."
+      ]
+    },
+    {
+      "round_id": 771122,
+      "reasons": [
+        "Missing pre-round 'model_predictions' container.",
+        "Missing final/champion probabilities dictionary.",
+        "Missing mandatory pre_round_hash provenance: got 'None'.",
+        "Missing mandatory input_feature_hash provenance: got 'None'.",
+        "Completed record missing mandatory resolution_hash provenance: got 'None'."
+      ]
+    },
+    {
+      "round_id": 993301,
+      "reasons": [
+        "Missing pre-round 'model_predictions' container.",
+        "Missing final/champion probabilities dictionary.",
+        "Missing mandatory pre_round_hash provenance: got 'None'.",
+        "Missing mandatory input_feature_hash provenance: got 'None'.",
+        "Completed record missing mandatory resolution_hash provenance: got 'None'."
+      ]
+    },
+    {
+      "round_id": 8029133,
+      "reasons": [
+        "Missing pre-round 'model_predictions' container.",
+        "Missing final/champion probabilities dictionary.",
+        "Missing mandatory pre_round_hash provenance: got 'None'.",
+        "Missing mandatory input_feature_hash provenance: got 'None'.",
+        "Completed record missing mandatory resolution_hash provenance: got 'None'."
+      ]
+    },
+    {
+      "round_id": 8033459,
+      "reasons": [
+        "Missing pre-round 'model_predictions' container.",
+        "Missing final/champion probabilities dictionary.",
+        "Missing mandatory pre_round_hash provenance: got 'None'.",
+        "Missing mandatory input_feature_hash provenance: got 'None'.",
+        "Completed record missing mandatory resolution_hash provenance: got 'None'."
+      ]
+    }
+  ],
+  "finalization_reason": "User stopped session manually",
+  "session_id": "stake_session_1791913093_b928e589"
+}

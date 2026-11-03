@@ -1,0 +1,9 @@
+{
+  "active_version": "v_cli_parity_test",
+  "active_checkpoint_path": "models\\checkpoints\\backup_v_cli_parity_test",
+  "promoted_at": "2026-10-13T17:11:08.626398+00:00",
+  "champion_model": "MLP",
+  "rollback_version": null,
+  "rollback_checkpoint_path": null,
+  "rolled_back_at": "2026-10-13T17:11:08.646859+00:00"
+}

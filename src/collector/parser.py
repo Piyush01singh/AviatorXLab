@@ -771,8 +771,17 @@ class AviatorEventParser:
                 except (ValueError, TypeError):
                     pass
 
-        # Extract timestamp
-        ts = inner.get("timestamp") or inner.get("time") or inner.get("created_at")
+        # Extract timestamp: prioritize explicit game server timestamp (e.g. serverTime from Spribe SFS2X)
+        ts = (
+            inner.get("serverTime")
+            or inner.get("server_time")
+            or inner.get("timestamp")
+            or inner.get("time")
+            or inner.get("created_at")
+            or (msg.get("serverTime") if isinstance(msg, dict) else None)
+            or (msg.get("server_time") if isinstance(msg, dict) else None)
+            or (msg.get("timestamp") if isinstance(msg, dict) else None)
+        )
         ts_str = self._normalize_timestamp(ts)
 
         # Detect CRASH / ROUND_FINISH event

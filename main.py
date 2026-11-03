@@ -653,6 +653,151 @@ yet offline backtesting under house edge confirms that no betting rule achieves 
     print(f"\n[SUCCESS] Comprehensive research report compiled to: {report_file}")
 
 
+def cmd_collect(args: argparse.Namespace) -> None:
+    """Manage real Stake telemetry collection and session parameters."""
+    from src.collector.collector import collector
+    from src.training.overnight_pipeline import overnight_pipeline
+
+    print("\n=== Stake Aviator Telemetry Collector ===")
+    print(f"Current saved authentic rounds: {len(collector.collected_rounds)}")
+
+    if args.action == "status":
+        prog = collector.get_session_progress()
+        print("\nSession Status:")
+        print(f"  Status: {prog.get('session_status', 'idle')}")
+        print(f"  Session Rounds: {prog.get('session_rounds_collected', 0)}")
+        print(f"  Total Authentic Rounds: {prog.get('total_authentic_rounds', len(collector.collected_rounds))}")
+        for k, v in prog.items():
+            if k not in ["session_status", "session_rounds_collected", "total_authentic_rounds"]:
+                print(f"  {k}: {v}")
+        return
+
+    if args.action == "start":
+        dur_h = args.duration_hours
+        dur_s = args.duration_seconds
+        if dur_h is None and dur_s is None:
+            dur_h = 6.0
+
+        prog = collector.start_session(
+            duration_hours=dur_h,
+            duration_seconds=dur_s,
+            target_rounds=args.target_rounds,
+            source="browser_observer",
+            auto_train=False,
+        )
+        print("\nCollection Session Started:")
+        for k, v in prog.items():
+            print(f"  {k}: {v}")
+        print("\n[NOTE] Ensure the Live Telemetry Bridge / Browser Observer is running (e.g. `python run_app.py`).")
+
+    elif args.action == "stop":
+        prog = collector.stop_session()
+        print("\nCollection Session Stopped and Finalized:")
+        for k, v in prog.items():
+            print(f"  {k}: {v}")
+
+
+def cmd_overnight(args: argparse.Namespace) -> None:
+    """Execute overnight candidate model training, evaluation, and conditional promotion."""
+    from src.training.overnight_pipeline import overnight_pipeline
+
+    print("\n=== Overnight Training & Candidate Promotion Pipeline ===\n")
+    report = overnight_pipeline.run_pipeline(
+        new_rounds_file=args.file,
+        force_promotion=args.force_promotion,
+        tag=args.tag,
+        confirmed=True,
+    )
+    print("\n--- Pipeline Execution Summary ---")
+    print(f"Tag: {report.get('pipeline_tag', 'N/A')}")
+    print(f"Duration: {report.get('execution_duration_sec', 'N/A')}s")
+    print(f"Champion Selected: {report.get('champion_model', 'N/A')}")
+    print(f"Promotion Status: {report.get('promotion_status', 'N/A')}")
+    print(f"Promoted: {report.get('promoted', False)}")
+    print(f"Checkpoint Directory: {report.get('checkpoint_directory', 'N/A')}")
+    print(f"Candidate Ensemble Weights: {report.get('candidate_ensemble_weights', {})}")
+
+
+def cmd_rollback(args: argparse.Namespace) -> None:
+    """Roll back active model checkpoint to the previous approved configuration."""
+    from src.training.overnight_pipeline import overnight_pipeline
+
+    print("\n=== Model Checkpoint Rollback ===\n")
+    res = overnight_pipeline.rollback()
+    if res["status"] == "success":
+        print(f"[SUCCESS] {res['message']}")
+        print(f"Active version now: {res['metadata']['active_version']}")
+    else:
+        print(f"[ERROR] {res['message']}")
+
+
+def cmd_audit_signal(args: argparse.Namespace) -> None:
+    """Audit statistical signal, serial independence, and distribution fairness."""
+    from src.evaluation.statistical_signal import (
+        run_autocorrelation_audit,
+        run_distribution_fairness_audit,
+    )
+
+    config = load_config(args.config)
+    input_file = args.file or "data/raw/real_aviator_historical.csv"
+    p = Path(input_file)
+    if not p.is_file():
+        p = Path("data/raw/synthetic_sample.csv")
+
+    print(f"\n=== Statistical Signal & Fairness Audit for '{p}' ===\n")
+    df = load_csv(str(p))
+    multipliers = df["multiplier"].values
+
+    auto_res = run_autocorrelation_audit(multipliers, max_lags=args.max_lags)
+    dist_res = run_distribution_fairness_audit(multipliers, rtp=args.rtp)
+
+    print("--- Autocorrelation & Serial Dependence ---")
+    print(f"Sample size: {auto_res.get('sample_size')}")
+    print(f"Ljung-Box Q Stat: {auto_res.get('ljung_box_stat')} (p = {auto_res.get('ljung_box_p_value')})")
+    print(f"Is White Noise: {auto_res.get('is_white_noise')}")
+    print(f"Conclusion: {auto_res.get('conclusion')}")
+
+    print("\n--- Theoretical Distribution & Fairness (RTP = 97%) ---")
+    print(f"Instant Crash Rate (< 1.01x): {dist_res.get('instant_crash_rate')} (Expected: ~3%)")
+    print(f"Wilson 95% CI: {dist_res.get('instant_crash_95_ci')}")
+    ks_info = dist_res.get("kolmogorov_smirnov", {})
+    print(f"KS Test p-value: {ks_info.get('p_value')}")
+    print(f"Consistent with 97% Continuous Model: {ks_info.get('consistent')}")
+
+
+def cmd_audit_leakage(args: argparse.Namespace) -> None:
+    """Audit feature set for causal timing and future information leakage."""
+    from src.features.timing_audit import (
+        audit_feature_set,
+        verify_feature_causality_invariance,
+    )
+
+    print("\n=== Feature Timing & Causality Invariance Audit ===\n")
+    trainer = TabularTrainer(config_path=args.config)
+    X, y_thresh, y_reg = trainer.prepare_data(args.file)
+
+    feature_names = list(X.columns)
+    audit_rep = audit_feature_set(feature_names)
+
+    print(f"Total features evaluated: {audit_rep['total_features']}")
+    print(f"Leakage violations detected: {len(audit_rep['forbidden_features'])}")
+    print(f"Is strictly causal: {audit_rep['is_leakage_free']}")
+
+    print("\nRunning runtime causality invariance perturbation test...")
+    raw_df = load_csv(args.file or "data/raw/synthetic_sample.csv")
+    inv_pass, max_diff = verify_feature_causality_invariance(
+        raw_df,
+        trainer.builder.build,
+        target_idx=min(100, len(raw_df) - 5),
+    )
+    print(f"Perturbation invariance passed: {inv_pass} (max_diff={max_diff})")
+    if audit_rep["is_leakage_free"] and inv_pass:
+        print("\n[SUCCESS] Feature pipeline is 100% causal and verified leakage-free.")
+    else:
+        print("\n[WARNING] Potential leakage issues detected.")
+        sys.exit(1)
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Build CLI argument parser."""
     parser = argparse.ArgumentParser(
@@ -708,6 +853,30 @@ def build_parser() -> argparse.ArgumentParser:
     # report
     subparsers.add_parser("report", help="Generate scientific research report.")
 
+    # collect
+    p_col = subparsers.add_parser("collect", help="Manage real Stake Aviator telemetry collection session.")
+    p_col.add_argument("action", choices=["start", "stop", "status"], default="status", nargs="?", help="Collection action.")
+    p_col.add_argument("--duration-hours", type=float, default=None, help="Target session duration in hours.")
+    p_col.add_argument("--duration-seconds", type=float, default=None, help="Target session duration in seconds.")
+    p_col.add_argument("--target-rounds", type=int, default=None, help="Target round count for collection.")
+    p_col.add_argument("--no-auto-train", action="store_true", help="Disable automatic post-collection training.")
+
+    # overnight
+    p_on = subparsers.add_parser("overnight", help="Run overnight candidate model retraining, evaluation & promotion.")
+    p_on.add_argument("--force-promotion", action="store_true", help="Force candidate promotion ignoring statistical significance gates.")
+    p_on.add_argument("--tag", type=str, default=None, help="Custom tag for the checkpoint version.")
+
+    # rollback
+    subparsers.add_parser("rollback", help="Roll back active model checkpoint to previous approved version.")
+
+    # audit-signal
+    p_sig = subparsers.add_parser("audit-signal", help="Audit autocorrelation, serial independence, and distribution fairness.")
+    p_sig.add_argument("--max-lags", type=int, default=20, help="Maximum lag rounds for autocorrelation.")
+    p_sig.add_argument("--rtp", type=float, default=0.97, help="Theoretical Return-To-Player (e.g. 0.97 for Aviator).")
+
+    # audit-leakage
+    subparsers.add_parser("audit-leakage", help="Audit feature set for causal timing and future information leakage.")
+
     return parser
 
 
@@ -731,6 +900,11 @@ def main() -> None:
         "backtest": cmd_backtest,
         "plot": cmd_plot,
         "report": cmd_report,
+        "collect": cmd_collect,
+        "overnight": cmd_overnight,
+        "rollback": cmd_rollback,
+        "audit-signal": cmd_audit_signal,
+        "audit-leakage": cmd_audit_leakage,
     }
 
     handler = dispatch.get(args.command)

@@ -1,7 +1,7 @@
 """XGBoost threshold classifier and regression models with early stopping."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 import joblib
 import numpy as np
 import pandas as pd
@@ -54,12 +54,20 @@ class XGBoostThresholdClassifier:
         y_train: pd.Series,
         X_val: Optional[pd.DataFrame] = None,
         y_val: Optional[pd.Series] = None,
+        eval_set: Optional[List[Tuple[Any, Any]]] = None,
     ) -> "XGBoostThresholdClassifier":
         """Fit XGBoost model with early stopping on validation split."""
         self.feature_names = list(X_train.columns)
-        eval_set = [(X_train.values, y_train.values)]
+        if eval_set is not None and len(eval_set) > 0 and X_val is None:
+            val_pair = eval_set[0]
+            if isinstance(val_pair, (tuple, list)) and len(val_pair) == 2:
+                X_val, y_val = val_pair[0], val_pair[1]
+
+        ev_set = [(X_train.values, y_train.values)]
         if X_val is not None and y_val is not None:
-            eval_set.append((X_val[self.feature_names].values, y_val.values))
+            x_v = X_val[self.feature_names].values if isinstance(X_val, pd.DataFrame) else np.asarray(X_val)
+            y_v = y_val.values if isinstance(y_val, pd.Series) else np.asarray(y_val)
+            ev_set.append((x_v, y_v))
 
         logger.info(
             f"Fitting XGBoost Classifier (trees={self.n_estimators}, depth={self.max_depth}) "
@@ -68,7 +76,7 @@ class XGBoostThresholdClassifier:
         self.model.fit(
             X_train.values,
             y_train.values,
-            eval_set=eval_set,
+            eval_set=ev_set,
             verbose=False,
         )
         self.is_fitted = True

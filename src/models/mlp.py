@@ -85,17 +85,16 @@ class MLPThresholdClassifier:
         y_train: Union[pd.DataFrame, np.ndarray],
         X_val: Optional[pd.DataFrame] = None,
         y_val: Optional[Union[pd.DataFrame, np.ndarray]] = None,
+        eval_set: Optional[Union[Tuple[Any, Any], List[Tuple[Any, Any]]]] = None,
         pos_weight: Optional[torch.Tensor] = None,
     ) -> "MLPThresholdClassifier":
-        """Train MLP with early stopping on validation loss.
-        
-        Args:
-            X_train: Training features.
-            y_train: Multi-threshold targets matrix (N, num_thresholds).
-            X_val: Validation features (for early stopping).
-            y_val: Validation targets matrix.
-            pos_weight: Optional positive class weighting tensor.
-        """
+        """Train MLP with early stopping on validation loss."""
+        if eval_set is not None and X_val is None:
+            if isinstance(eval_set, list) and len(eval_set) > 0:
+                eval_set = eval_set[0]
+            if isinstance(eval_set, (tuple, list)) and len(eval_set) == 2:
+                X_val, y_val = eval_set[0], eval_set[1]
+
         set_seed(self.random_state)
         self.feature_names = list(X_train.columns)
         input_dim = len(self.feature_names)

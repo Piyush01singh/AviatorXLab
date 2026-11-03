@@ -87,6 +87,95 @@ class GRUThresholdClassifier:
         self.best_val_loss: float = float("inf")
         self.is_fitted: bool = False
 
+    def fit(
+        self,
+        X_seq: np.ndarray,
+        y_seq: np.ndarray,
+        X_val_seq: Optional[np.ndarray] = None,
+        y_val_seq: Optional[np.ndarray] = None,
+        eval_set: Optional[Union[Tuple[Any, Any], List[Tuple[Any, Any]]]] = None,
+    ) -> "GRUThresholdClassifier":
+        """Fit PyTorch GRU model with early stopping on sequence validation set."""
+        from torch.utils.data import DataLoader, TensorDataset
+        import torch.nn as nn
+        from src.utils.reproducibility import set_seed
+
+        if eval_set is not None and X_val_seq is None:
+            if isinstance(eval_set, list) and len(eval_set) > 0:
+                eval_set = eval_set[0]
+            if isinstance(eval_set, (tuple, list)) and len(eval_set) == 2:
+                X_val_seq, y_val_seq = eval_set[0], eval_set[1]
+
+        set_seed(self.random_state)
+        n_samples, seq_len, n_features = X_seq.shape
+        self.sequence_length = seq_len
+        output_dim = y_seq.shape[1] if y_seq.ndim > 1 else 1
+
+        self.model = GRUNetwork(
+            input_dim=n_features,
+            hidden_size=self.hidden_size,
+            num_layers=self.num_layers,
+            dropout=self.dropout,
+            output_dim=output_dim,
+        ).to(self.device)
+
+        train_ds = TensorDataset(torch.from_numpy(X_seq.astype(np.float32)), torch.from_numpy(y_seq.astype(np.float32)))
+        train_loader = DataLoader(train_ds, batch_size=self.batch_size, shuffle=True, drop_last=False)
+
+        val_loader = None
+        if X_val_seq is not None and y_val_seq is not None:
+            val_ds = TensorDataset(torch.from_numpy(X_val_seq.astype(np.float32)), torch.from_numpy(y_val_seq.astype(np.float32)))
+            val_loader = DataLoader(val_ds, batch_size=self.batch_size, shuffle=False)
+
+        pos_counts = np.sum(y_seq, axis=0)
+        neg_counts = len(y_seq) - pos_counts
+        pos_weight_vals = np.clip(neg_counts / np.maximum(pos_counts, 1.0), 0.5, 10.0)
+        pos_weight_tensor = torch.from_numpy(pos_weight_vals.astype(np.float32)).to(self.device)
+
+        criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight_tensor)
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
+
+        best_loss = float("inf")
+        best_state = None
+        patience_counter = 0
+
+        for epoch in range(1, self.epochs + 1):
+            self.model.train()
+            for bx, by in train_loader:
+                bx, by = bx.to(self.device), by.to(self.device)
+                optimizer.zero_grad()
+                logits = self.model(bx)
+                loss = criterion(logits, by)
+                loss.backward()
+                optimizer.step()
+
+            if val_loader is not None:
+                self.model.eval()
+                v_loss = 0.0
+                with torch.no_grad():
+                    for bx, by in val_loader:
+                        bx, by = bx.to(self.device), by.to(self.device)
+                        logits = self.model(bx)
+                        v_loss += criterion(logits, by).item() * len(bx)
+                v_loss /= len(val_ds)
+
+                if v_loss < best_loss:
+                    best_loss = v_loss
+                    best_state = {k: v.cpu().clone() for k, v in self.model.state_dict().items()}
+                    patience_counter = 0
+                else:
+                    patience_counter += 1
+
+                if patience_counter >= self.early_stopping_patience:
+                    break
+
+        if best_state is not None:
+            self.model.load_state_dict({k: v.to(self.device) for k, v in best_state.items()})
+            self.best_val_loss = best_loss
+
+        self.is_fitted = True
+        return self
+
     def predict_proba(self, X_seq: np.ndarray) -> np.ndarray:
         """Predict sigmoid probabilities from input sequence tensor."""
         if not self.is_fitted or self.model is None:
@@ -138,13 +227,21 @@ class GRUThresholdClassifier:
         if not path.is_file():
             raise FileNotFoundError(f"GRU checkpoint not found at {filepath}")
         payload = joblib.load(path)
-        config = payload["config"].copy()
+        if isinstance(payload, cls):
+            return payload
+        if isinstance(payload, dict) and "model" in payload and isinstance(payload["model"], cls):
+            inst = payload["model"]
+            if "feature_names" in payload and not getattr(inst, "feature_names", None):
+                inst.feature_names = payload["feature_names"]
+            return inst
+
+        config = payload.get("config", {}).copy() if isinstance(payload, dict) and "config" in payload else {}
         config.pop("best_val_loss", None)
         instance = cls(**config)
-        instance.feature_names = payload.get("feature_names", [])
-        instance.best_val_loss = payload.get("best_val_loss", float("inf"))
+        instance.feature_names = payload.get("feature_names", []) if isinstance(payload, dict) else []
+        instance.best_val_loss = payload.get("best_val_loss", float("inf")) if isinstance(payload, dict) else float("inf")
 
-        state_dict = payload["model_state"]
+        state_dict = payload.get("model_state") if isinstance(payload, dict) else None
         if state_dict is not None:
             input_dim = state_dict["gru.weight_ih_l0"].shape[1]
             output_dim = state_dict["fc.weight"].shape[0]

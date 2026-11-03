@@ -474,6 +474,68 @@ body {
   .thresholds-grid { grid-template-columns: 1fr; }
   .metrics-grid { grid-template-columns: 1fr; }
 }
+
+/* Next Round Prediction & Socket Diagnostics Enhancements */
+.resolved-round-card {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+.socket-diag-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-bottom: 18px;
+}
+.diag-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.diag-label {
+  font-size: 0.675rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+.diag-val {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.pulse-update-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 4px;
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  transition: opacity 0.5s ease;
+}
+.stage-in-flight {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  animation: pulse-badge 1.5s infinite;
+}
+.stage-expired-badge {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+.dimmed-card {
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
   </style>
 </head>
 <body>
@@ -512,6 +574,12 @@ body {
             <path d="M4 1h8l3 3v11H1V1h3zm0 1H2v13h12V5h-3V2H4zm8 0v2h2l-2-2z"/>
           </svg>
           <span>Upload CSV</span>
+        </button>
+        <button id="tabNextRoundBtn" class="mode-tab" type="button" aria-selected="false">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M8 0a8 8 0 1 0 8 8A8.01 8.01 0 0 0 8 0zm0 14.5A6.5 6.5 0 1 1 14.5 8 6.51 6.51 0 0 1 8 14.5zM8.5 4h-1v4.5l3.5 2.1.5-.9-3-1.8z"/>
+          </svg>
+          <span>Next Round Prediction</span>
         </button>
       </nav>
 
@@ -795,13 +863,69 @@ body {
         </div>
       </section>
 
+      <!-- 3.5 OVERNIGHT COLLECTION & RETRAINING PIPELINE -->
+      <section class="section-card collection-pipeline-card" aria-labelledby="pipelineTitle">
+        <div class="section-sub-header">
+          <div class="section-sub-title-wrap">
+            <h2 id="pipelineTitle" class="section-sub-title">Overnight Collection &amp; Adaptive Training Pipeline</h2>
+            <span id="colStatusBadge" class="badge badge-warning">Collection: Idle</span>
+            <span id="colAutoTrainBadge" class="badge badge-accent">Post-session Training: Manual Confirmation Required</span>
+            <span id="championModelBadge" class="badge badge-calibrated">Champion: Approved Incumbent Ensemble</span>
+          </div>
+          <div class="obs-actions-row">
+            <button id="startCollectionBtn" class="btn btn-primary btn-sm" type="button">
+              <span>Start Overnight Session</span>
+            </button>
+            <button id="triggerTrainingBtn" class="btn btn-secondary btn-sm" type="button">
+              <span>Run Retraining Now</span>
+            </button>
+            <button id="rollbackModelBtn" class="btn btn-secondary btn-sm" type="button" title="Rollback to previous approved checkpoint">
+              <span>Rollback Version</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="observer-metrics-grid" style="margin-top: 14px;">
+          <div class="obs-metric-card">
+            <span class="obs-metric-label">Session Rounds</span>
+            <span id="colSessionRounds" class="obs-metric-val font-mono" style="color: #38bdf8;">0</span>
+            <span id="colTargetRoundsSub" class="obs-metric-sub">Target: 6.0h duration</span>
+          </div>
+          <div class="obs-metric-card">
+            <span class="obs-metric-label">Total Authentic Rounds</span>
+            <span id="colTotalRounds" class="obs-metric-val font-mono" style="color: #10b981;">0</span>
+            <span class="obs-metric-sub">Durable Stake storage</span>
+          </div>
+          <div class="obs-metric-card">
+            <span class="obs-metric-label">Session Timer (Monotonic)</span>
+            <span id="colElapsed" class="obs-metric-val font-mono">0s</span>
+            <span id="colRemainingSub" class="obs-metric-sub">Remaining: —</span>
+          </div>
+          <div class="obs-metric-card">
+            <span class="obs-metric-label">Quality Verification</span>
+            <span id="colQualityCounts" class="obs-metric-val font-mono" style="font-size: 0.85rem; color: #10b981;">0 Valid / 0 Rej</span>
+            <span id="colIncompleteSub" class="obs-metric-sub">0 Incomplete | 0 Dup</span>
+          </div>
+          <div class="obs-metric-card">
+            <span class="obs-metric-label">Dataset SHA-256 Provenance</span>
+            <span id="colDatasetHash" class="obs-metric-val font-mono text-truncate" style="font-size: 0.75rem;">—</span>
+            <span id="colDatasetPathSub" class="obs-metric-sub text-truncate">data/live/stake_collected_rounds.jsonl</span>
+          </div>
+          <div class="obs-metric-card">
+            <span class="obs-metric-label">Connection Health &amp; Gaps</span>
+            <span id="colConnectionHealth" class="obs-metric-val font-mono" style="font-size: 0.85rem;">Ready</span>
+            <span id="colLastValidRoundSub" class="obs-metric-sub text-truncate">Last Round: —</span>
+          </div>
+        </div>
+      </section>
+
       <!-- 4. NEXT ROUND PREDICTION (HERO CARD) -->
       <section class="section-card next-round-hero-card" aria-labelledby="nextRoundTitle">
         <div class="hero-top-row">
           <div class="hero-meta">
             <div class="hero-badge-row">
               <span class="badge badge-accent">Pre-Round Causal Forecast</span>
-              <span class="badge badge-calibrated">
+              <span id="calibrationBadgeWrap" class="badge badge-calibrated">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.854 3.646a.5.5 0 010 .708l-7 7a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 11.708-.708L6.5 10.293l6.646-6.647a.5.5 0 01.708 0z"/></svg>
                 <span id="calibrationStatusText">Well-Calibrated (Platt/Isotonic)</span>
               </span>
@@ -812,7 +936,7 @@ body {
 
           <!-- Highlight Consensus Metric -->
           <div class="hero-spotlight">
-            <span class="spotlight-label">Weighted Ensemble Target P(&ge; 2.0x)</span>
+            <span id="spotlightModelLabel" class="spotlight-label">Approved Champion Target P(&ge; 2.0x)</span>
             <div class="spotlight-value-wrap">
               <span id="consensusEnsembleVal" class="spotlight-value font-mono">—</span>
             </div>
@@ -823,11 +947,11 @@ body {
         <!-- Consensus Breakdown Bar -->
         <div class="consensus-stats-bar">
           <div class="consensus-stat-item">
-            <span class="consensus-stat-label">6-Model Consensus Mean</span>
+            <span class="consensus-stat-label">Reference Consensus Mean (Comparison Only)</span>
             <span id="consensusMeanVal" class="consensus-stat-val font-mono">—</span>
           </div>
           <div class="consensus-stat-item">
-            <span class="consensus-stat-label">Model Min &ndash; Max Spread</span>
+            <span class="consensus-stat-label">Model Min &ndash; Max Spread (Reference)</span>
             <span id="consensusSpreadVal" class="consensus-stat-val font-mono">—</span>
           </div>
           <div class="consensus-stat-item">
@@ -852,8 +976,11 @@ body {
       <!-- 5. THRESHOLD PROBABILITY CARDS -->
       <section class="section-card threshold-cards-section" aria-labelledby="thresholdsSectionTitle">
         <div class="section-header-block">
-          <h2 id="thresholdsSectionTitle" class="section-heading">Threshold Probability Estimates</h2>
-          <p class="section-subtext">Pre-round probability estimates across discrete payout multipliers compared against theoretical fair-game limits.</p>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px;">
+            <h2 id="thresholdsSectionTitle" class="section-heading">Threshold Probability Estimates</h2>
+            <span id="thresholdsModelBadge" class="badge badge-accent font-mono" style="font-size: 0.75rem;">Source: Approved Champion</span>
+          </div>
+          <p class="section-subtext">Authoritative pre-round forecast derived from the approved champion across discrete payout multipliers compared against theoretical fair-game limits.</p>
         </div>
 
         <div class="thresholds-grid" id="mainThresholdsGrid">
@@ -924,6 +1051,55 @@ body {
         </div>
         <div class="table-footnote">
           <small>Causal verification: Pre-round predictions are committed and displayed prior to round liftoff. Brier loss is defined as $(y - \hat{p})^2$.</small>
+        </div>
+      </section>
+
+      <!-- 7.5 LIVE SHADOW LEARNING & IMMUTABLE LEDGER -->
+      <section class="section-card shadow-learning-section" aria-labelledby="shadowSectionTitle">
+        <div class="section-header-block">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+            <div>
+              <h2 id="shadowSectionTitle" class="section-heading">Live Shadow Learning &amp; Adaptive Ensemble Weights</h2>
+              <p class="section-subtext">Compares approved deployed ensemble weights with separate live candidate weights optimized against out-of-sample Brier score &amp; Log Loss.</p>
+            </div>
+            <span id="shadowUpdatesBadge" class="badge badge-accent">Updates: 0</span>
+          </div>
+        </div>
+
+        <div class="summary-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 16px;">
+          <div class="summary-card">
+            <span class="summary-label">Approved Deployed Weights</span>
+            <div id="deployedWeightsList" class="font-mono text-sm" style="margin-top: 6px; display: flex; flex-direction: column; gap: 4px;">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">Shadow Candidate Weights (Adaptive)</span>
+            <div id="candidateWeightsList" class="font-mono text-sm" style="margin-top: 6px; display: flex; flex-direction: column; gap: 4px;">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+
+        <div class="benchmark-table-wrap">
+          <h3 class="subsection-heading">Immutable Prediction Ledger Audit (Last 5 Rounds)</h3>
+          <div class="table-responsive">
+            <table class="data-table" id="ledgerTable">
+              <thead>
+                <tr>
+                  <th>Round ID</th>
+                  <th>Pre-Round SHA-256</th>
+                  <th class="text-right">Pre-Round P(≥2.0x)</th>
+                  <th class="text-right">Actual Multiplier</th>
+                  <th>Resolution Status</th>
+                  <th>Ledger Integrity</th>
+                </tr>
+              </thead>
+              <tbody id="ledgerTableBody">
+                <tr><td colspan="6" class="text-muted text-center py-4">Loading immutable ledger records...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -1054,6 +1230,201 @@ body {
 
     </div><!-- END #csvView -->
 
+    <!-- =======================================================================
+         NEXT ROUND PREDICTION TAB (Requirement 4)
+         Focuses EXCLUSIVELY on upcoming round.
+         Strictly NO CSV controls, NO history charts, NO training controls, NO betting/cashout.
+         ======================================================================= -->
+    <div id="nextRoundView" class="view-panel" style="display: none;">
+      
+      <!-- Top Telemetry & Status Bar -->
+      <section class="section-card control-panel-card" aria-label="Game Source and Phase Status">
+        <div class="control-panel-grid" style="grid-template-columns: repeat(4, 1fr);">
+          
+          <div class="control-col">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span class="control-label">Target Round</span>
+              <span id="nrUpdateBadge" class="pulse-update-badge" style="display: none;">UPDATED</span>
+            </div>
+            <span id="nrTargetRoundId" class="control-value font-mono text-cyan-400" style="font-size: 1.3rem; font-weight: 800;">—</span>
+          </div>
+
+          <div class="control-col">
+            <span class="control-label">Target Round Phase</span>
+            <div class="stage-badge-wrap">
+              <span id="nrPhaseBadge" class="stage-badge stage-idle" role="status">
+                <span id="nrPhaseText">UNAVAILABLE</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="control-col">
+            <span class="control-label">Game Feed Status</span>
+            <div class="control-status-wrap">
+              <span id="nrSourceDot" class="status-indicator-dot status-dot-offline"></span>
+              <span id="nrSourceStatus" class="control-status-text">DISCONNECTED</span>
+            </div>
+          </div>
+
+          <div class="control-col">
+            <span class="control-label">Last Recognized Game Event</span>
+            <span id="nrLastEvent" class="control-value text-sm text-truncate text-muted">—</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 1. LATEST RESOLVED ROUND CARD (Requirement 1: Prominent, updated only upon genuine crash resolution, strictly separate from next-round prediction) -->
+      <section class="section-card resolved-round-card" id="nrLatestResolvedCard" aria-labelledby="latestResolvedHeading" style="padding: 20px 24px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 12px; background: rgba(56, 189, 248, 0.12); color: #38bdf8;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div>
+              <span style="font-size: 0.725rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted);" id="latestResolvedHeading">Latest Resolved Round (Completed Crash Result)</span>
+              <div style="display: flex; align-items: center; gap: 10px; margin-top: 3px;">
+                <span id="nrResolvedRoundId" class="font-mono" style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary);">#—</span>
+                <span id="nrResolvedOutcomeBadge" class="badge badge-hit">Awaiting resolution</span>
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 28px;">
+            <div style="text-align: right;">
+              <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Actual Crash Multiplier</span>
+              <div id="nrResolvedMultiplier" class="font-mono" style="font-size: 1.9rem; font-weight: 900; color: #38bdf8; line-height: 1.1;">—</div>
+            </div>
+            <div style="text-align: right; border-left: 1px solid var(--border-subtle); padding-left: 24px;">
+              <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Resolution Timestamp</span>
+              <div id="nrResolvedTimestamp" class="font-mono text-xs text-secondary" style="margin-top: 4px;">—</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. WEBSOCKET & STREAM DIAGNOSTICS STRIP (Requirement 5: Diagnose Spribe vs Stake platform sockets) -->
+      <div class="socket-diag-strip" id="nrSocketDiagStrip">
+        <div class="diag-item">
+          <span class="diag-label">Spribe Game Socket</span>
+          <span class="diag-val font-mono" id="nrSpribeSocketStatus" style="color: #10b981;">CONNECTED</span>
+        </div>
+        <div class="diag-item">
+          <span class="diag-label">Stake Platform Socket</span>
+          <span class="diag-val font-mono text-truncate" id="nrStakePlatformSocketStatus" style="color: var(--text-muted); font-size: 0.775rem;" title="Stake chat/sports feed socket (error does not affect Spribe game)">DISCONNECTED (Platform Feed Only)</span>
+        </div>
+        <div class="diag-item">
+          <span class="diag-label">Last Raw Frame</span>
+          <span class="diag-val font-mono text-truncate text-xs text-muted" id="nrLastRawFrame" title="Last frame ingested">—</span>
+        </div>
+        <div class="diag-item">
+          <span class="diag-label">Connection Gaps / Drops</span>
+          <span class="diag-val font-mono" id="nrConnectionGapsVal" style="font-size: 0.85rem;">0 gaps (0.0s)</span>
+        </div>
+      </div>
+
+      <!-- Fallback Hero Card: Rendered whenever is_valid === false -->
+      <section id="nrFallbackBox" class="section-card" style="display: block; text-align: center; padding: 48px 24px;">
+        <div style="max-width: 540px; margin: 0 auto;">
+          <div style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; background: rgba(245, 158, 11, 0.12); color: #f59e0b; margin-bottom: 16px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <h2 id="nrFallbackMessage" style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; letter-spacing: -0.01em;">No valid pre-round prediction available</h2>
+          <p id="nrFallbackSubtext" style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">Forecasts are strictly verified pre-round in WAITING phase before flying starts. When a round begins or resolves, prior forecasts expire and the engine awaits the next verified pre-round event.</p>
+        </div>
+      </section>
+
+      <!-- Verified Next Round Prediction Content: Rendered whenever is_valid === true -->
+      <div id="nrForecastBox" style="display: none;">
+        
+        <!-- Champion Model & Verification Provenance Banner -->
+        <section class="section-card" style="padding: 20px 24px; margin-bottom: 18px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <span class="badge badge-success" id="nrVerificationBadge">VERIFIED PRE-ROUND</span>
+                <span class="text-xs text-muted font-mono" id="nrFreshness">Freshness: —</span>
+              </div>
+              <h2 class="section-heading" style="margin: 0;" id="nrChampionModelName">Approved Incumbent Ensemble</h2>
+              <span class="text-xs text-dim font-mono" id="nrModelVersion">Checkpoint: v1.0.0_initial</span>
+            </div>
+            <div style="text-align: right;">
+              <span class="text-xs text-muted">Generation Timestamp (UTC)</span>
+              <div id="nrPredictionTimestamp" class="font-mono text-xs text-cyan-400" style="margin-top: 2px;">—</div>
+            </div>
+          </div>
+
+          <!-- Provenance Hashes Strip -->
+          <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-subtle); display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <span class="text-xs text-dim">Pre-Round Ledger Hash:</span>
+              <div id="nrPreRoundHash" class="font-mono text-xs text-truncate text-secondary">—</div>
+            </div>
+            <div>
+              <span class="text-xs text-dim">Input Feature Hash:</span>
+              <div id="nrInputFeatureHash" class="font-mono text-xs text-truncate text-secondary">—</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5 Exceedance Threshold Probability Cards (P >= 1.5x, 2x, 3x, 5x, 10x) -->
+        <section class="section-card" style="padding: 24px;" aria-labelledby="nrThresholdsTitle">
+          <h3 id="nrThresholdsTitle" class="section-sub-title" style="margin-bottom: 16px;">Next Round Exceedance Probabilities</h3>
+          <div class="thresholds-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;">
+            
+            <div class="threshold-card">
+              <span class="threshold-target">P(multiplier ≥ 1.5x)</span>
+              <span id="nrProb1_5" class="threshold-prob">—</span>
+              <div class="progress-bar-bg"><div id="nrBar1_5" class="progress-bar-fill" style="width: 0%;"></div></div>
+              <span class="threshold-benchmark">Baseline: ~64.7%</span>
+            </div>
+
+            <div class="threshold-card" style="border-color: rgba(56, 189, 248, 0.4);">
+              <span class="threshold-target">P(multiplier ≥ 2.0x)</span>
+              <span id="nrProb2_0" class="threshold-prob" style="color: var(--accent-primary);">—</span>
+              <div class="progress-bar-bg"><div id="nrBar2_0" class="progress-bar-fill" style="width: 0%;"></div></div>
+              <span class="threshold-benchmark">Baseline: ~48.5%</span>
+            </div>
+
+            <div class="threshold-card">
+              <span class="threshold-target">P(multiplier ≥ 3.0x)</span>
+              <span id="nrProb3_0" class="threshold-prob">—</span>
+              <div class="progress-bar-bg"><div id="nrBar3_0" class="progress-bar-fill" style="width: 0%;"></div></div>
+              <span class="threshold-benchmark">Baseline: ~32.3%</span>
+            </div>
+
+            <div class="threshold-card">
+              <span class="threshold-target">P(multiplier ≥ 5.0x)</span>
+              <span id="nrProb5_0" class="threshold-prob">—</span>
+              <div class="progress-bar-bg"><div id="nrBar5_0" class="progress-bar-fill" style="width: 0%;"></div></div>
+              <span class="threshold-benchmark">Baseline: ~19.4%</span>
+            </div>
+
+            <div class="threshold-card">
+              <span class="threshold-target">P(multiplier ≥ 10.0x)</span>
+              <span id="nrProb10_0" class="threshold-prob">—</span>
+              <div class="progress-bar-bg"><div id="nrBar10_0" class="progress-bar-fill" style="width: 0%;"></div></div>
+              <span class="threshold-benchmark">Baseline: ~9.7%</span>
+            </div>
+
+          </div>
+
+          <!-- Academic Disclaimer -->
+          <div class="disclaimer-callout" style="margin-top: 20px;">
+            <div class="disclaimer-icon-wrap" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <p class="disclaimer-body">
+              <strong>Probabilistic Calibration Notice:</strong> Exceedance probabilities are strictly monotonic estimates bounded by provably fair house edge parameters. Aviator crash multiplier generation exhibits zero out-of-sample predictability (ROC-AUC ~ 0.500); probability estimates do not imply or guarantee future multiplier outcomes.
+            </p>
+          </div>
+        </section>
+
+      </div><!-- END #nrForecastBox -->
+
+    </div><!-- END #nextRoundView -->
+
   </main>
 
   <!-- =========================================================================
@@ -1131,6 +1502,216 @@ body {
       </div>
       <div class="modal-footer">
         <button id="applySourceBtn" class="btn btn-primary" type="button">Apply & Reconnect</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- =========================================================================
+       OVERNIGHT SESSION SETUP DIALOG
+       ========================================================================= -->
+  <dialog id="sessionSetupModal" class="modal-dialog" aria-labelledby="sessionSetupTitle">
+    <div class="modal-card" style="max-width: 560px;">
+      <div class="modal-header">
+        <h3 id="sessionSetupTitle" class="modal-title">Overnight Collection Session Setup</h3>
+        <button id="closeSetupModalBtn" class="btn-icon" aria-label="Close dialog">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Configure automated overnight collection parameters. Rounds are verified continuously against the deterministic causal schema.</p>
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Duration -->
+          <div>
+            <label class="input-label" for="setupDurationHours">Collection Duration (hours)</label>
+            <input type="number" id="setupDurationHours" class="text-input font-mono" min="0.1" max="48" step="0.5" value="6.0" style="width: 100%;">
+            <span class="text-xs text-muted">Default is 6 hours. Monotonic backend clock enforces automatic stop.</span>
+          </div>
+
+          <!-- Target round limit toggle -->
+          <div>
+            <label class="source-option" style="cursor: pointer; margin-bottom: 6px;">
+              <input type="checkbox" id="setupRoundLimitToggle">
+              <div class="source-info">
+                <span class="source-title" style="font-size: 0.85rem;">Enable maximum completed-round limit (optional)</span>
+                <span class="source-detail">Disabled by default. If enabled, collection stops automatically when round limit is reached.</span>
+              </div>
+            </label>
+            <div id="setupRoundLimitInputWrap" style="display: none; margin-top: 6px;">
+              <input type="number" id="setupTargetRounds" class="text-input font-mono" min="1" step="10" placeholder="e.g. 500" style="width: 100%;">
+            </div>
+          </div>
+
+          <!-- Source locked badge -->
+          <div style="background: var(--bg-card-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 10px 14px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span class="text-xs text-muted" style="font-weight: 600; text-transform: uppercase;">Telemetry Source</span>
+              <span class="badge badge-success" style="font-size: 0.7rem;">Locked to Genuine Telemetry</span>
+            </div>
+            <p class="font-mono text-sm" style="margin-top: 4px; color: var(--text-primary);">
+              browser_observer (Stake Aviator Telemetry)
+            </p>
+            <span class="text-xs text-dim">Sample streams and synthetic fixtures are strictly forbidden.</span>
+          </div>
+
+          <!-- Connection Status Info -->
+          <div style="background: var(--bg-card-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 10px 14px;">
+            <span class="text-xs text-muted" style="font-weight: 600; text-transform: uppercase;">Connection Health</span>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px;">
+              <div>
+                <span class="text-xs text-dim">Telemetry Bridge:</span>
+                <div id="setupBridgeStatus" class="font-mono text-xs" style="color: #38bdf8;">Checking...</div>
+              </div>
+              <div>
+                <span class="text-xs text-dim">Stake Observer:</span>
+                <div id="setupObserverStatus" class="font-mono text-xs" style="color: #10b981;">Checking...</div>
+              </div>
+              <div>
+                <span class="text-xs text-dim">Backend API:</span>
+                <div class="font-mono text-xs" style="color: #10b981;">Connected (Ready)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary of Stopping Conditions -->
+          <div style="background: rgba(14,165,233,0.08); border: 1px solid rgba(14,165,233,0.2); border-radius: var(--radius-md); padding: 10px 14px;">
+            <span class="text-xs text-muted" style="font-weight: 600; text-transform: uppercase; color: #38bdf8;">Configured Stopping Conditions</span>
+            <p id="setupStoppingSummaryText" class="text-sm" style="margin-top: 4px; color: var(--text-primary);">
+              Collection will stop after 6.0 hours.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+        <button id="cancelSetupBtn" class="btn btn-secondary" type="button">Cancel</button>
+        <button id="confirmStartColBtn" class="btn btn-primary" type="button">Start Collection</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- =========================================================================
+       RETRAINING CONFIRMATION DIALOG (SINGLE EXPLICIT CONFIRMATION)
+       ========================================================================= -->
+  <dialog id="retrainConfirmModal" class="modal-dialog" aria-labelledby="retrainConfirmTitle">
+    <div class="modal-card" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3 id="retrainConfirmTitle" class="modal-title">Confirm Six-Model Retraining</h3>
+        <button id="closeRetrainModalBtn" class="btn-icon" aria-label="Close dialog">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Review the validated dataset snapshot, chronological split boundaries, and statistical promotion safeguards before initiating candidate retraining.</p>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <!-- Dataset & Hash -->
+          <div style="background: var(--bg-card-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 10px 14px;">
+            <span class="text-xs text-muted" style="font-weight: 600; text-transform: uppercase;">Selected Overnight Dataset Snapshot</span>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px;">
+              <div>
+                <span class="text-xs text-dim">Session ID:</span>
+                <div id="confSessionId" class="font-mono text-xs text-truncate">—</div>
+              </div>
+              <div>
+                <span class="text-xs text-dim">SHA-256 Checksum:</span>
+                <div id="confDatasetHash" class="font-mono text-xs text-truncate">—</div>
+              </div>
+            </div>
+            <div style="margin-top: 6px;">
+              <span class="text-xs text-dim">Collection Time Range:</span>
+              <div id="confTimeRange" class="font-mono text-xs">—</div>
+            </div>
+          </div>
+
+          <!-- Sample & Quality Counts -->
+          <div style="background: var(--bg-card-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 10px 14px;">
+            <span class="text-xs text-muted" style="font-weight: 600; text-transform: uppercase;">Sample Counts &amp; Quality Audit</span>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-top: 6px;">
+              <div>
+                <span class="text-xs text-dim">Accepted (Valid):</span>
+                <div id="confAcceptedCnt" class="font-mono text-sm" style="color: #10b981;">0</div>
+              </div>
+              <div>
+                <span class="text-xs text-dim">Incomplete:</span>
+                <div id="confIncompleteCnt" class="font-mono text-sm" style="color: #f59e0b;">0</div>
+              </div>
+              <div>
+                <span class="text-xs text-dim">Rejected:</span>
+                <div id="confRejectedCnt" class="font-mono text-sm" style="color: #ef4444;">0</div>
+              </div>
+              <div>
+                <span class="text-xs text-dim">Duplicates:</span>
+                <div id="confDuplicateCnt" class="font-mono text-sm">0</div>
+              </div>
+            </div>
+            <div style="margin-top: 8px; font-size: 0.8rem; color: var(--text-secondary);">
+              Merged with approved historical baseline data: <strong id="confHistoricalRows">15,962 rounds</strong> (<code>real_aviator_historical.csv</code>).
+            </div>
+            <div style="display: flex; align-items: baseline; justify-content: space-between; margin-top: 10px; padding: 10px 14px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md);">
+              <span style="font-size: 0.825rem; font-weight: 700; color: #10b981; text-transform: uppercase;">Exact Final Training Rows (After Deduplication):</span>
+              <span id="confFinalTrainingRows" class="font-mono text-base font-bold" style="color: #10b981;">—</span>
+            </div>
+          </div>
+
+          <!-- Reproducible Input Dataset Manifest Table (Requirement 1) -->
+          <div style="background: var(--bg-card-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 10px 14px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span class="text-xs text-muted" style="font-weight: 600; text-transform: uppercase;">Reproducible Input Dataset Manifest</span>
+              <span id="confManifestFilesCount" class="text-xs text-dim font-mono">0 files</span>
+            </div>
+            <div style="max-height: 140px; overflow-y: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.725rem; font-family: var(--font-mono);">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--border-subtle); text-align: left; color: var(--text-dim);">
+                    <th style="padding: 4px;">File</th>
+                    <th style="padding: 4px;">Source</th>
+                    <th style="padding: 4px;">SHA-256</th>
+                    <th style="padding: 4px;">Total</th>
+                    <th style="padding: 4px;">Valid</th>
+                    <th style="padding: 4px;">Rej</th>
+                    <th style="padding: 4px;">Unique</th>
+                  </tr>
+                </thead>
+                <tbody id="confManifestTableBody">
+                  <tr><td colspan="7" style="padding: 8px; text-align: center; color: var(--text-dim);">Loading manifest...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Conflicting Duplicates Alert (Requirement 1) -->
+          <div id="confConflictsAlert" style="display: none; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: var(--radius-md); padding: 10px 14px;">
+            <strong style="color: #ef4444; font-size: 0.85rem;">⚠️ Conflicting Duplicate Records Detected</strong>
+            <p id="confConflictsText" class="text-xs" style="color: var(--text-secondary); margin-top: 2px;">
+              Discrepancies found across input sources. Conflicting records have been safely quarantined and excluded from training.
+            </p>
+          </div>
+
+          <!-- Models & Split Plan -->
+          <div style="background: var(--bg-card-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 10px 14px;">
+            <span class="text-xs text-muted" style="font-weight: 600; text-transform: uppercase;">Six Models &amp; Split Plan</span>
+            <p class="text-xs text-secondary" style="margin-top: 4px;">
+              Models: <strong>Logistic Regression, Random Forest, XGBoost, MLP, LSTM, GRU</strong>
+            </p>
+            <p class="text-xs text-muted" style="margin-top: 2px;">
+              Split: <strong>60% Train | 15% Calibration | 15% Validation | 10% Untouched Test</strong>
+            </p>
+            <p class="text-xs text-dim" style="margin-top: 2px;">
+              Calibration: <strong>Platt Sigmoid &amp; Isotonic Regression</strong> fitted on Calibration split.
+            </p>
+            <p class="text-xs text-dim" style="margin-top: 2px;">
+              Safeguards: <strong>Holm-corrected paired loss significance test (p&lt;0.05)</strong>, Brier margins, strict monotonicity guard.
+            </p>
+          </div>
+
+          <!-- Insufficient Sample Warning -->
+          <div id="confInsufficientWarning" style="display: none; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: var(--radius-md); padding: 10px 14px;">
+            <strong style="color: #ef4444; font-size: 0.85rem;">⚠️ Insufficient Sample Warning</strong>
+            <p class="text-xs" style="color: var(--text-secondary); margin-top: 2px;">
+              The overnight sample has fewer than 120 completed rounds. Statistical promotion criteria will retain the approved incumbent fallback if sample evidence is insufficient.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+        <button id="cancelRetrainBtn" class="btn btn-secondary" type="button">Cancel</button>
+        <button id="confirmRetrainBtn" class="btn btn-primary" type="button">Confirm and Start Training</button>
       </div>
     </div>
   </dialog>
